@@ -1,7 +1,7 @@
 <!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>我的工作记录</title><style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,"Microsoft YaHei",sans-serif;background:#f5f6f8;color:#253044}.app{max-width:1180px;margin:auto;padding:28px}
-button,input,textarea,select{font:inherit}.tabs{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin:20px 0}.tab,.btn{border:1px solid #dfe3e8;background:#fff;padding:13px;border-radius:12px;cursor:pointer}.tab.active,.primary{background:#253044;color:#fff;border-color:#253044}.panel{display:none}.panel.active{display:block}.card{background:#fff;border:1px solid #e4e7eb;border-radius:16px;padding:18px;margin-bottom:14px}.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}input,textarea,select{border:1px solid #d9dde5;border-radius:10px;padding:10px}input[type=text],textarea{width:100%}textarea{min-height:90px}.item{padding:12px 0;border-bottom:1px solid #eee}.item:last-child{border:0}.title{font-weight:700}.meta{font-size:13px;color:#7d8797;margin-top:4px}.note{white-space:pre-wrap;margin-top:7px;line-height:1.5}.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.danger{border:0;background:transparent;color:#b34b4b;cursor:pointer}.done .title{text-decoration:line-through;color:#999}.badge{font-size:12px;background:#eef1f5;padding:4px 8px;border-radius:20px}.empty{color:#999;padding:18px;text-align:center}.weekly{display:none;gap:7px;flex-wrap:wrap;align-items:center}
+button,input,textarea,select{font:inherit}.tabs{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin:20px 0}.tab,.btn{border:1px solid #dfe3e8;background:#fff;padding:13px;border-radius:12px;cursor:pointer}.tab.active,.primary{background:#253044;color:#fff;border-color:#253044}.panel{display:none}.panel.active{display:block}.card{background:#fff;border:1px solid #e4e7eb;border-radius:16px;padding:18px;margin-bottom:14px}.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}input,textarea,select{border:1px solid #d9dde5;border-radius:10px;padding:10px}input[type=text],textarea{width:100%}textarea{min-height:90px}.item{padding:12px 0;border-bottom:1px solid #eee}.item:last-child{border:0}.title{font-weight:700}.meta{font-size:13px;color:#7d8797;margin-top:4px}.note{white-space:pre-wrap;margin-top:7px;line-height:1.5}.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.danger{border:0;background:transparent;color:#b34b4b;cursor:pointer}.done .title{color:#253044}.badge{font-size:12px;background:#eef1f5;padding:4px 8px;border-radius:20px}.empty{color:#999;padding:18px;text-align:center}.weekly{display:none;gap:7px;flex-wrap:wrap;align-items:center}
 @media(max-width:800px){.tabs{grid-template-columns:1fr 1fr}.app{padding:15px}}
 </style></head><body><div class="app"><h1>💼 我的工作记录</h1><div class="meta">待办 · 重要日期 · Email Memo · 备忘录 · 资料备份</div>
 <div class="tabs"><button class="tab active" data-p="workmaster">🗂️ 工作列表</button><button class="tab" data-p="todo">📋 今日工作</button><button class="tab" data-p="dates">📅 重要日期</button><button class="tab" data-p="email">📧 Email Memo</button><button class="tab" data-p="notes">📝 备忘录</button><button class="tab" data-p="backup">💾 资料备份</button></div>
@@ -30,7 +30,9 @@ function addWork(){
  d.works.push({id:Date.now(),title:t,notes:wn.value.trim(),type,days,activeDates:[],completed:[]});
  wt.value='';wn.value='';document.querySelectorAll('.wd').forEach(x=>x.checked=false);save()
 }
-function workActive(x,t=ld()){return (x.activeDates||[]).includes(t)||(x.type==='weekly'&&x.days.includes(new Date(t+'T12:00:00').getDay()))}
+function workActive(x,t=ld()){
+  return (x.activeDates||[]).includes(t)||(x.type==='weekly'&&x.days.includes(new Date(t+'T12:00:00').getDay()));
+}
 function isDone(x,t=ld()){return (x.completed||[]).includes(t)}
 function addToday(id){
  let x=d.works.find(a=>a.id===id);if(!x)return;
@@ -38,10 +40,21 @@ function addToday(id){
 }
 function toggle(id){
  let x=d.works.find(a=>a.id===id);if(!x)return;let t=ld();x.completed=x.completed||[];
- x.completed=x.completed.includes(t)?x.completed.filter(a=>a!==t):[...x.completed,t];save()
+ if(x.completed.includes(t)){
+   x.completed=x.completed.filter(a=>a!==t);
+ }else{
+   x.completed.push(t);
+ }
+ save()
+}
+function cancelToday(id){
+ let x=d.works.find(a=>a.id===id);if(!x)return;let t=ld();
+ x.completed=(x.completed||[]).filter(a=>a!==t);
+ if(!(x.activeDates||[]).includes(t)){x.activeDates=x.activeDates||[];x.activeDates.push(t)}
+ save()
 }
 function tomorrow(id){
- let x=d.works.find(a=>a.id===id);if(!x)return;let t=ld(),z=new Date();z.setDate(z.getDate()+1);let tm=ld(z);
+ let x=d.works.find(a=>a.id===id);if(!x)return;let t=ld(),z=new Date(t+'T12:00:00');z.setDate(z.getDate()+1);let tm=ld(z);
  x.activeDates=x.activeDates||[];x.activeDates=x.activeDates.filter(a=>a!==t);if(!x.activeDates.includes(tm))x.activeDates.push(tm);
  x.completed=(x.completed||[]).filter(a=>a!==t);save()
 }
@@ -73,12 +86,38 @@ function importData(e){
   r.readAsText(f);
 }
 function render(){
- let t=ld(),dow=new Date(t+'T12:00:00').getDay(),names=['日','一','二','三','四','五','六'];
+ let t=ld(),now=new Date(t+'T12:00:00'),dow=now.getDay(),names=['日','一','二','三','四','五','六'];
+ let yd=new Date(now);yd.setDate(yd.getDate()-1);let y=ld(yd),ydow=yd.getDay();
+
+ // Automatically carry all unfinished work from yesterday into today.
+ d.works.forEach(x=>{
+   x.activeDates=x.activeDates||[];x.completed=x.completed||[];
+   let wasYesterday=(x.activeDates.includes(y)||(x.type==='weekly'&&x.days.includes(ydow)));
+   if(wasYesterday&&!x.completed.includes(y)&&!x.activeDates.includes(t))x.activeDates.push(t);
+ });
+ localStorage.setItem(K,JSON.stringify(d));
+
  masterList.innerHTML=d.works.length?d.works.map(x=>`<div class="item"><div class="title">${esc(x.title)}</div>${x.type==='weekly'?`<div class="meta">每周固定：${x.days.map(v=>names[v]).join('・')}</div>`:'<div class="meta">工作列表</div>'}${x.notes?`<div class="note">${esc(x.notes)}</div>`:''}<div class="actions"><button class="btn primary" onclick="addToday(${x.id})">＋ 加入今日工作</button><button class="danger" onclick="delW(${x.id})">删除</button></div></div>`).join(''):'<div class="empty">还没有保存工作项目</div>';
- let a=d.works.filter(x=>workActive(x,t)),p=a.filter(x=>!isDone(x,t)),q=a.filter(x=>isDone(x,t));
- let card=x=>`<div class="item ${isDone(x,t)?'done':''}"><label><input type="checkbox" ${isDone(x,t)?'checked':''} onchange="toggle(${x.id})"> <span class="title">${esc(x.title)}</span></label>${x.notes?`<div class="note">${esc(x.notes)}</div>`:''}<div class="actions">${!isDone(x,t)?`<button class="btn" onclick="tomorrow(${x.id})">明天再做</button>`:''}</div></div>`;
- workList.innerHTML=`<div class="meta">${t} 星期${names[dow]}</div><h3>未完成 <span class="badge">${p.length}</span></h3>${p.map(card).join('')||'<div class="empty">今天没有未完成工作 🎉</div>'}<h3>已完成 ✅ <span class="badge">${q.length}</span></h3>${q.map(card).join('')||'<div class="empty">还没有完成项目</div>'}`;
-dateList.innerHTML=d.dates.sort((a,b)=>a.date.localeCompare(b.date)).map(x=>`<div class="item"><b>${esc(x.title)}</b> <span class="badge">${esc(x.type)}</span><div class="meta">${x.date}</div><button class="danger" onclick="delD(${x.id})">删除</button></div>`).join('')||'<div class="empty">还没有重要日期</div>';
-let z=(es?.value||'').toLowerCase(),em=d.emails.filter(x=>!z||(x.title+' '+x.body).toLowerCase().includes(z));emailList.innerHTML=em.map(x=>`<div class="card"><b>${esc(x.title)}</b><div class="note">${esc(x.body)}</div><div class="actions"><button class="btn" onclick="copyE(${x.id})">📋 Copy</button><button class="btn" onclick="editE(${x.id})">✏️ Edit</button><button class="danger" onclick="delE(${x.id})">🗑️ Delete</button></div></div>`).join('')||'<div class="card empty">还没有 Email Memo</div>';noteList.innerHTML=d.notes.map(x=>`<div class="card"><b>${esc(x.title)}</b><div class="note">${esc(x.body)}</div><button class="danger" onclick="delN(${x.id})">删除</button></div>`).join('')||'<div class="card empty">还没有备忘录</div>'}
+
+ let a=d.works.filter(x=>workActive(x,t));
+ let p=a.filter(x=>!isDone(x,t)),q=a.filter(x=>isDone(x,t));
+ let yesterdayPending=d.works.filter(x=>{
+   let was=(x.activeDates||[]).includes(y)||(x.type==='weekly'&&x.days.includes(ydow));
+   return was&&!isDone(x,y);
+ });
+
+ let pendingCard=x=>`<div class="item"><label><input type="checkbox" onchange="toggle(${x.id})"> <span class="title">${esc(x.title)}</span></label>${x.notes?`<div class="note">${esc(x.notes)}</div>`:''}<div class="actions"><button class="btn" onclick="tomorrow(${x.id})">明天再做</button></div></div>`;
+ let doneCard=x=>`<div class="item"><label><input type="checkbox" checked onchange="cancelToday(${x.id})"> <span class="title">${esc(x.title)}</span></label>${x.notes?`<div class="note">${esc(x.notes)}</div>`:''}<div class="actions"><button class="btn" onclick="cancelToday(${x.id})">↩ 取消完成</button></div></div>`;
+
+ workList.innerHTML=
+ `<div class="meta">${t} 星期${names[dow]}</div>
+  ${yesterdayPending.length?`<div style="margin-top:14px;padding:12px;background:#fff7e8;border-radius:12px"><b>⏰ 昨天未完成 ${yesterdayPending.length}</b><div class="meta" style="margin-top:4px">已自动带到今天的未完成工作</div>${yesterdayPending.map(x=>`<div style="padding-top:7px">• ${esc(x.title)}</div>`).join('')}</div>`:''}
+  <h3>未完成 <span class="badge">${p.length}</span></h3>
+  ${p.map(pendingCard).join('')||'<div class="empty">今天没有未完成工作 🎉</div>'}
+  <h3>已完成 ✅ <span class="badge">${q.length}</span></h3>
+  ${q.map(doneCard).join('')||'<div class="empty">还没有完成项目</div>'}`;
+
+ dateList.innerHTML=d.dates.sort((a,b)=>a.date.localeCompare(b.date)).map(x=>`<div class="item"><b>${esc(x.title)}</b> <span class="badge">${esc(x.type)}</span><div class="meta">${x.date}</div><button class="danger" onclick="delD(${x.id})">删除</button></div>`).join('')||'<div class="empty">还没有重要日期</div>';
+ let z=(es?.value||'').toLowerCase(),em=d.emails.filter(x=>!z||(x.title+' '+x.body).toLowerCase().includes(z));emailList.innerHTML=em.map(x=>`<div class="card"><b>${esc(x.title)}</b><div class="note">${esc(x.body)}</div><div class="actions"><button class="btn" onclick="copyE(${x.id})">📋 Copy</button><button class="btn" onclick="editE(${x.id})">✏️ Edit</button><button class="danger" onclick="delE(${x.id})">🗑️ Delete</button></div></div>`).join('')||'<div class="card empty">还没有 Email Memo</div>';noteList.innerHTML=d.notes.map(x=>`<div class="card"><b>${esc(x.title)}</b><div class="note">${esc(x.body)}</div><button class="danger" onclick="delN(${x.id})">删除</button></div>`).join('')||'<div class="card empty">还没有备忘录</div>'}
 wdate.value=ld();sched();render();
 </script></body></html>
