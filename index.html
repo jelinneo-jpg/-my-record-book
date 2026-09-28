@@ -1,99 +1,30 @@
-<!doctype html>
-<html lang="zh-CN">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>我的工作记录</title>
-<style>
-*{box-sizing:border-box} body{margin:0;font-family:Arial,"Microsoft YaHei",sans-serif;background:#f5f6f8;color:#253044}
-button,input,textarea,select{font:inherit}.app{max-width:1180px;margin:auto;padding:28px}
-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
-h1{font-size:28px;margin:0}.sub{color:#778196;margin-top:6px}
-.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
-.tab{border:1px solid #e3e6eb;background:#fff;padding:16px;border-radius:14px;cursor:pointer;font-weight:700;font-size:16px}
-.tab.active{background:#253044;color:#fff}.panel{display:none}.panel.active{display:block}
-.card{background:#fff;border:1px solid #e5e8ed;border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 4px 16px #00000008}
-.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-input,select,textarea{border:1px solid #d9dde5;border-radius:10px;padding:11px 12px;background:#fff}
-input[type=text]{flex:1;min-width:240px} textarea{width:100%;min-height:120px;resize:vertical}
-.primary{border:0;background:#253044;color:white;border-radius:10px;padding:11px 18px;cursor:pointer}
-.secondary{border:1px solid #d9dde5;background:#fff;border-radius:10px;padding:10px 15px;cursor:pointer}
-.danger{border:0;background:transparent;color:#b34b4b;cursor:pointer}
-.item{display:flex;align-items:flex-start;gap:12px;padding:13px 4px;border-bottom:1px solid #eef0f3}
-.item:last-child{border-bottom:0}.grow{flex:1}.done .title{text-decoration:line-through;color:#9aa1ad}
-.meta{font-size:13px;color:#8991a0;margin-top:4px}.title{font-weight:700}
-.badge{font-size:12px;background:#eef1f5;padding:4px 8px;border-radius:20px}
-.note{white-space:pre-wrap;line-height:1.55}.empty{color:#9aa1ad;text-align:center;padding:25px}
-.actions{display:flex;gap:5px}.backup{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.file{display:none}
-@media(max-width:700px){.app{padding:16px}.tabs{grid-template-columns:1fr 1fr}.backup{grid-template-columns:1fr}h1{font-size:24px}}
-</style>
-</head>
-<body>
-<div class="app">
-<header><div><h1>💼 我的工作记录</h1><div class="sub">待办 · 重要日期 · 备忘录 · 资料备份</div></div></header>
-<div class="tabs">
-<button class="tab active" data-page="todo">📋 待办事项</button>
-<button class="tab" data-page="dates">📅 重要日期</button>
-<button class="tab" data-page="notes">📝 备忘录</button>
-<button class="tab" data-page="backup">💾 资料备份</button>
-</div>
-
-<section id="todo" class="panel active">
-<div class="card"><h3>新增待办</h3><div class="row">
-<input id="todoText" type="text" placeholder="例如：Follow up customer payment">
-<select id="todoGroup"><option>今天</option><option>本周</option></select>
-<button class="primary" onclick="addTodo()">＋ 新增</button></div></div>
-<div class="card"><div id="todoList"></div></div>
-</section>
-
-<section id="dates" class="panel">
-<div class="card"><h3>新增重要日期</h3><div class="row">
-<input id="dateTitle" type="text" placeholder="例如：Month End Closing">
-<input id="dateValue" type="date">
-<select id="dateType"><option>Closing</option><option>Follow-up</option><option>其他</option></select>
-<button class="primary" onclick="addDate()">＋ 新增</button></div></div>
-<div class="card"><div id="dateList"></div></div>
-</section>
-
-<section id="notes" class="panel">
-<div class="card"><h3>新增备忘录</h3>
-<input id="noteTitle" type="text" placeholder="标题" style="width:100%;margin-bottom:10px">
-<textarea id="noteText" placeholder="输入临时工作记录…"></textarea>
-<div style="margin-top:10px"><button class="primary" onclick="addNote()">＋ 保存备忘录</button></div></div>
-<div id="noteList"></div>
-</section>
-
-<section id="backup" class="panel">
-<div class="backup">
-<div class="card"><h3>📤 导出备份</h3><p>把待办事项、重要日期和备忘录全部保存成一个备份文件。</p><button class="primary" onclick="exportBackup()">导出备份</button><div class="meta" id="lastExport"></div></div>
-<div class="card"><h3>📥 导入恢复</h3><p>选择之前导出的备份文件恢复资料。</p><button class="secondary" onclick="document.getElementById('importFile').click()">选择备份文件</button><input class="file" id="importFile" type="file" accept=".json,application/json" onchange="importBackup(event)"></div>
-</div>
-</section>
-</div>
-<script>
-const KEY='workRecordApp_v1';
-let data=JSON.parse(localStorage.getItem(KEY)||'null')||{todos:[],dates:[],notes:[],lastExport:''};
-function save(){localStorage.setItem(KEY,JSON.stringify(data));render()}
-document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab,.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(b.dataset.page).classList.add('active')});
-function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
-function addTodo(){let t=todoText.value.trim();if(!t)return;data.todos.unshift({id:Date.now(),text:t,group:todoGroup.value,done:false});todoText.value='';save()}
-function toggleTodo(id){let x=data.todos.find(x=>x.id===id);if(x){x.done=!x.done;save()}}
-function delTodo(id){if(confirm('确认删除这项待办事项吗？')){data.todos=data.todos.filter(x=>x.id!==id);save()}}
-function addDate(){let t=dateTitle.value.trim(),d=dateValue.value;if(!t||!d)return alert('请填写名称和日期。');data.dates.push({id:Date.now(),title:t,date:d,type:dateType.value});dateTitle.value='';dateValue.value='';save()}
-function delDate(id){if(confirm('确认删除这个重要日期吗？')){data.dates=data.dates.filter(x=>x.id!==id);save()}}
-function dayText(s){let a=new Date(s+'T00:00:00'),b=new Date();b.setHours(0,0,0,0);let n=Math.round((a-b)/86400000);return n===0?'今天':n>0?'还有 '+n+' 天':'已过 '+Math.abs(n)+' 天'}
-function addNote(){let t=noteTitle.value.trim(),n=noteText.value.trim();if(!t&&!n)return;data.notes.unshift({id:Date.now(),title:t||'未命名备忘录',text:n,updated:new Date().toLocaleString()});noteTitle.value='';noteText.value='';save()}
-function editNote(id){let x=data.notes.find(x=>x.id===id);let n=prompt('编辑备忘录内容：',x.text);if(n!==null){x.text=n;x.updated=new Date().toLocaleString();save()}}
-function delNote(id){if(confirm('确认删除这个备忘录吗？')){data.notes=data.notes.filter(x=>x.id!==id);save()}}
-function exportBackup(){data.lastExport=new Date().toLocaleString();localStorage.setItem(KEY,JSON.stringify(data));let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='工作记录备份_'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href);render()}
-function importBackup(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);if(!x.todos||!x.dates||!x.notes)throw 0;if(confirm('导入会以备份资料替换目前资料，确认继续吗？')){data=x;save();alert('资料恢复完成。')}}catch(_){alert('这个备份文件无法读取。')}e.target.value=''};r.readAsText(f)}
-function render(){
-todoList.innerHTML=data.todos.length?data.todos.map(x=>`<div class="item ${x.done?'done':''}"><input type="checkbox" ${x.done?'checked':''} onchange="toggleTodo(${x.id})"><div class="grow"><div class="title">${esc(x.text)}</div><div class="meta">${esc(x.group)}</div></div><button class="danger" onclick="delTodo(${x.id})">删除</button></div>`).join(''):'<div class="empty">还没有待办事项</div>';
-let ds=[...data.dates].sort((a,b)=>a.date.localeCompare(b.date));dateList.innerHTML=ds.length?ds.map(x=>`<div class="item"><div class="grow"><div class="title">${esc(x.title)} <span class="badge">${esc(x.type)}</span></div><div class="meta">${x.date} · ${dayText(x.date)}</div></div><button class="danger" onclick="delDate(${x.id})">删除</button></div>`).join(''):'<div class="empty">还没有重要日期</div>';
-noteList.innerHTML=data.notes.length?data.notes.map(x=>`<div class="card"><div class="item"><div class="grow"><div class="title">${esc(x.title)}</div><div class="meta">更新：${esc(x.updated)}</div></div><div class="actions"><button class="secondary" onclick="editNote(${x.id})">编辑</button><button class="danger" onclick="delNote(${x.id})">删除</button></div></div><div class="note" style="padding-top:12px">${esc(x.text)}</div></div>`).join(''):'<div class="card empty">还没有备忘录</div>';
-lastExport.textContent=data.lastExport?'上次导出：'+data.lastExport:'尚未导出备份';
-}
-render();
-</script>
-</body></html>
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>我的工作记录</title><style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,"Microsoft YaHei",sans-serif;background:#f5f6f8;color:#253044}.app{max-width:1180px;margin:auto;padding:28px}
+button,input,textarea,select{font:inherit}.tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:20px 0}.tab,.btn{border:1px solid #dfe3e8;background:#fff;padding:13px;border-radius:12px;cursor:pointer}.tab.active,.primary{background:#253044;color:#fff;border-color:#253044}.panel{display:none}.panel.active{display:block}.card{background:#fff;border:1px solid #e4e7eb;border-radius:16px;padding:18px;margin-bottom:14px}.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}input,textarea,select{border:1px solid #d9dde5;border-radius:10px;padding:10px}input[type=text],textarea{width:100%}textarea{min-height:90px}.item{padding:12px 0;border-bottom:1px solid #eee}.item:last-child{border:0}.title{font-weight:700}.meta{font-size:13px;color:#7d8797;margin-top:4px}.note{white-space:pre-wrap;margin-top:7px;line-height:1.5}.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.danger{border:0;background:transparent;color:#b34b4b;cursor:pointer}.done .title{text-decoration:line-through;color:#999}.badge{font-size:12px;background:#eef1f5;padding:4px 8px;border-radius:20px}.empty{color:#999;padding:18px;text-align:center}.weekly{display:none;gap:7px;flex-wrap:wrap;align-items:center}
+@media(max-width:800px){.tabs{grid-template-columns:1fr 1fr}.app{padding:15px}}
+</style></head><body><div class="app"><h1>💼 我的工作记录</h1><div class="meta">待办 · 重要日期 · Email Memo · 备忘录 · 资料备份</div>
+<div class="tabs"><button class="tab active" data-p="todo">📋 待办事项</button><button class="tab" data-p="dates">📅 重要日期</button><button class="tab" data-p="email">📧 Email Memo</button><button class="tab" data-p="notes">📝 备忘录</button><button class="tab" data-p="backup">💾 资料备份</button></div>
+<section id="todo" class="panel active"><div class="card"><h3>＋ 添加工作</h3><input id="wt" type="text" placeholder="工作内容"><textarea id="wn" placeholder="备注（可不填）"></textarea><div class="row"><select id="wtype" onchange="sched()"><option value="once">单次工作</option><option value="weekly">每周固定</option></select><div id="once"><input id="wdate" type="date"></div><div id="weekly" class="weekly"><label><input class="wd" type="checkbox" value="1"> 一</label><label><input class="wd" type="checkbox" value="2"> 二</label><label><input class="wd" type="checkbox" value="3"> 三</label><label><input class="wd" type="checkbox" value="4"> 四</label><label><input class="wd" type="checkbox" value="5"> 五</label><label><input class="wd" type="checkbox" value="6"> 六</label><label><input class="wd" type="checkbox" value="0"> 日</label><button class="btn" onclick="weekdays()">一键选工作日（一至五）</button></div><button class="btn primary" onclick="addWork()">保存工作</button></div></div><div class="card"><h3>📋 今日工作</h3><div id="workList"></div></div></section>
+<section id="dates" class="panel"><div class="card"><h3>新增重要日期</h3><div class="row"><input id="dt" type="text" placeholder="例如：Month End Closing" style="flex:1"><input id="dd" type="date"><select id="dtype"><option>Closing</option><option>Follow-up</option><option>Meeting</option><option>其他</option></select><button class="btn primary" onclick="addDate()">新增</button></div></div><div class="card" id="dateList"></div></section>
+<section id="email" class="panel"><div class="card"><h3>📧 Email Memo</h3><input id="es" type="text" placeholder="🔍 搜索标题或内容" oninput="render()"><br><br><input id="et" type="text" placeholder="标题，例如：Payment Reminder"><textarea id="eb" placeholder="Email 内容…"></textarea><button class="btn primary" onclick="saveEmail()">保存 Email Memo</button></div><div id="emailList"></div></section>
+<section id="notes" class="panel"><div class="card"><h3>📝 新增备忘录</h3><input id="nt" type="text" placeholder="标题"><textarea id="nb" placeholder="内容…"></textarea><button class="btn primary" onclick="addNote()">保存</button></div><div id="noteList"></div></section>
+<section id="backup" class="panel"><div class="card"><h3>💾 资料备份</h3><p>备份包含待办、重要日期、Email Memo 和备忘录。</p><div class="row"><button class="btn primary" onclick="exp()">📤 导出备份</button><button class="btn" onclick="imp.click()">📥 导入恢复</button><input id="imp" type="file" accept=".json" style="display:none" onchange="importData(event)"></div></div></section>
+</div><script>
+const K='workApp_v2';let d=JSON.parse(localStorage.getItem(K)||'null')||{works:[],dates:[],emails:[],notes:[]};['works','dates','emails','notes'].forEach(k=>d[k]=d[k]||[]);
+const $=x=>document.getElementById(x),esc=s=>String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+function ld(x=new Date()){return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`} function save(){localStorage.setItem(K,JSON.stringify(d));render()}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab,.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');$(b.dataset.p).classList.add('active')});
+function sched(){let q=wtype.value==='weekly';once.style.display=q?'none':'block';weekly.style.display=q?'flex':'none'}function weekdays(){document.querySelectorAll('.wd').forEach(x=>x.checked=['1','2','3','4','5'].includes(x.value))}
+function addWork(){let t=wt.value.trim(),type=wtype.value,days=[...document.querySelectorAll('.wd:checked')].map(x=>+x.value);if(!t)return alert('请填写工作内容');if(type==='weekly'&&!days.length)return alert('请选择星期');d.works.push({id:Date.now(),title:t,notes:wn.value.trim(),type,date:type==='once'?(wdate.value||ld()):'',days,done:false,completed:[]});wt.value='';wn.value='';save()}
+function isDone(x){return x.type==='weekly'?(x.completed||[]).includes(ld()):x.done}function toggle(id){let x=d.works.find(a=>a.id===id),t=ld();if(x.type==='weekly'){x.completed=x.completed||[];x.completed=x.completed.includes(t)?x.completed.filter(a=>a!==t):[...x.completed,t]}else x.done=!x.done;save()}
+function tomorrow(id){let x=d.works.find(a=>a.id===id);if(!x||x.type==='weekly')return;let z=new Date();z.setDate(z.getDate()+1);x.date=ld(z);save()}function delW(id){if(confirm('确定删除这项工作吗？')){d.works=d.works.filter(x=>x.id!==id);save()}}
+function addDate(){if(!dt.value.trim()||!dd.value)return alert('请填写名称和日期');d.dates.push({id:Date.now(),title:dt.value.trim(),date:dd.value,type:dtype.value});dt.value='';dd.value='';save()}function delD(id){if(confirm('确定删除吗？')){d.dates=d.dates.filter(x=>x.id!==id);save()}}
+let ee=null;function saveEmail(){if(!et.value.trim()&&!eb.value.trim())return;if(ee){let x=d.emails.find(a=>a.id===ee);x.title=et.value.trim()||'未命名 Email';x.body=eb.value.trim()}else d.emails.unshift({id:Date.now(),title:et.value.trim()||'未命名 Email',body:eb.value.trim()});ee=null;et.value='';eb.value='';save()}function editE(id){let x=d.emails.find(a=>a.id===id);ee=id;et.value=x.title;eb.value=x.body}function delE(id){if(confirm('确定删除这个 Email Memo 吗？')){d.emails=d.emails.filter(x=>x.id!==id);save()}}async function copyE(id){let x=d.emails.find(a=>a.id===id);await navigator.clipboard.writeText(x.body);alert('已复制')}
+function addNote(){if(!nt.value.trim()&&!nb.value.trim())return;d.notes.unshift({id:Date.now(),title:nt.value.trim()||'未命名',body:nb.value.trim()});nt.value='';nb.value='';save()}function delN(id){if(confirm('确定删除吗？')){d.notes=d.notes.filter(x=>x.id!==id);save()}}
+function exp(){let a=document.createElement('a'),u=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:'application/json'}));a.href=u;a.download='工作App备份_'+ld()+'.json';a.click();URL.revokeObjectURL(u)}function importData(e){let f=e.target.files[0];if(!f)return,r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);if(confirm('导入会替换目前资料，确定吗？')){d=x;save()}}catch{alert('备份文件无法读取')}};r.readAsText(f)}
+function render(){let t=ld(),dow=new Date(t+'T12:00:00').getDay(),names=['日','一','二','三','四','五','六'],a=d.works.filter(x=>x.type==='weekly'?x.days.includes(dow):x.date===t),p=a.filter(x=>!isDone(x)),q=a.filter(isDone),card=x=>`<div class="item ${isDone(x)?'done':''}"><label><input type="checkbox" ${isDone(x)?'checked':''} onchange="toggle(${x.id})"> <span class="title">${esc(x.title)}</span></label><div class="meta">${x.type==='weekly'?'固定：'+x.days.map(v=>names[v]).join('・'):x.date}</div>${x.notes?`<div class="note">${esc(x.notes)}</div>`:''}<div class="actions">${!isDone(x)&&x.type!=='weekly'?`<button class="btn" onclick="tomorrow(${x.id})">明天再做</button>`:''}<button class="danger" onclick="delW(${x.id})">删除</button></div></div>`;workList.innerHTML=`<div class="meta">${t} 星期${names[dow]}</div><h3>未完成 <span class="badge">${p.length}</span></h3>${p.map(card).join('')||'<div class="empty">今天没有未完成工作 🎉</div>'}<h3>已完成 ✅ <span class="badge">${q.length}</span></h3>${q.map(card).join('')||'<div class="empty">还没有完成项目</div>'}`;
+dateList.innerHTML=d.dates.sort((a,b)=>a.date.localeCompare(b.date)).map(x=>`<div class="item"><b>${esc(x.title)}</b> <span class="badge">${esc(x.type)}</span><div class="meta">${x.date}</div><button class="danger" onclick="delD(${x.id})">删除</button></div>`).join('')||'<div class="empty">还没有重要日期</div>';
+let z=(es?.value||'').toLowerCase(),em=d.emails.filter(x=>!z||(x.title+' '+x.body).toLowerCase().includes(z));emailList.innerHTML=em.map(x=>`<div class="card"><b>${esc(x.title)}</b><div class="note">${esc(x.body)}</div><div class="actions"><button class="btn" onclick="copyE(${x.id})">📋 Copy</button><button class="btn" onclick="editE(${x.id})">✏️ Edit</button><button class="danger" onclick="delE(${x.id})">🗑️ Delete</button></div></div>`).join('')||'<div class="card empty">还没有 Email Memo</div>';noteList.innerHTML=d.notes.map(x=>`<div class="card"><b>${esc(x.title)}</b><div class="note">${esc(x.body)}</div><button class="danger" onclick="delN(${x.id})">删除</button></div>`).join('')||'<div class="card empty">还没有备忘录</div>'}
+wdate.value=ld();sched();render();
+</script></body></html>
