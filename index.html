@@ -44,7 +44,29 @@ function delW(id){if(confirm('确定删除这项工作吗？')){d.works=d.works.
 function addDate(){if(!dt.value.trim()||!dd.value)return alert('请填写名称和日期');d.dates.push({id:Date.now(),title:dt.value.trim(),date:dd.value,type:dtype.value});dt.value='';dd.value='';save()}function delD(id){if(confirm('确定删除吗？')){d.dates=d.dates.filter(x=>x.id!==id);save()}}
 let ee=null;function saveEmail(){if(!et.value.trim()&&!eb.value.trim())return;if(ee){let x=d.emails.find(a=>a.id===ee);x.title=et.value.trim()||'未命名 Email';x.body=eb.value.trim()}else d.emails.unshift({id:Date.now(),title:et.value.trim()||'未命名 Email',body:eb.value.trim()});ee=null;et.value='';eb.value='';save()}function editE(id){let x=d.emails.find(a=>a.id===id);ee=id;et.value=x.title;eb.value=x.body}function delE(id){if(confirm('确定删除这个 Email Memo 吗？')){d.emails=d.emails.filter(x=>x.id!==id);save()}}async function copyE(id){let x=d.emails.find(a=>a.id===id);await navigator.clipboard.writeText(x.body);alert('已复制')}
 function addNote(){if(!nt.value.trim()&&!nb.value.trim())return;d.notes.unshift({id:Date.now(),title:nt.value.trim()||'未命名',body:nb.value.trim()});nt.value='';nb.value='';save()}function delN(id){if(confirm('确定删除吗？')){d.notes=d.notes.filter(x=>x.id!==id);save()}}
-function exp(){let a=document.createElement('a'),u=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:'application/json'}));a.href=u;a.download='工作App备份_'+ld()+'.json';a.click();URL.revokeObjectURL(u)}function importData(e){let f=e.target.files[0];if(!f)return,r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);if(confirm('导入会替换目前资料，确定吗？')){d=x;save()}}catch{alert('备份文件无法读取')}};r.readAsText(f)}
+function exp(){
+  let a=document.createElement('a');
+  let u=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:'application/json'}));
+  a.href=u;a.download='工作App备份_'+ld()+'.json';a.click();URL.revokeObjectURL(u);
+}
+function importData(e){
+  let f=e.target.files[0];
+  if(!f)return;
+  let r=new FileReader();
+  r.onload=()=>{
+    try{
+      let x=JSON.parse(r.result);
+      if(confirm('导入会替换目前资料，确定吗？')){
+        d=x;
+        ['works','dates','emails','notes'].forEach(k=>d[k]=d[k]||[]);
+        d.works.forEach(x=>{x.activeDates=x.activeDates||[];x.completed=x.completed||[];x.days=x.days||[]});
+        save();
+      }
+    }catch(err){alert('备份文件无法读取')}
+    e.target.value='';
+  };
+  r.readAsText(f);
+}
 function render(){
  let t=ld(),dow=new Date(t+'T12:00:00').getDay(),names=['日','一','二','三','四','五','六'];
  masterList.innerHTML=d.works.length?d.works.map(x=>`<div class="item"><div class="title">${esc(x.title)}</div>${x.type==='weekly'?`<div class="meta">每周固定：${x.days.map(v=>names[v]).join('・')}</div>`:'<div class="meta">工作列表</div>'}${x.notes?`<div class="note">${esc(x.notes)}</div>`:''}<div class="actions"><button class="btn primary" onclick="addToday(${x.id})">＋ 加入今日工作</button><button class="danger" onclick="delW(${x.id})">删除</button></div></div>`).join(''):'<div class="empty">还没有保存工作项目</div>';
