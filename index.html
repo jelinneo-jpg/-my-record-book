@@ -212,7 +212,61 @@ input,textarea,select{
  pointer-events:none!important;z-index:0!important;
 }
 #workmaster>*{position:relative;z-index:1}
-</style></head><body><div class="app"><h1>Lynn’s Work Book</h1><div class="meta">待办 · 重要日期 · Email Memo · 备忘录 · 资料备份</div>
+</style>
+<style id="v42-today-work-theme">
+/* Today Work visual theme only */
+#workList h3,#workList h4{color:#3e2d27}
+
+/* unfinished / completed section headers */
+#workList .pending-title,
+#workList .unfinished-title{
+  background:linear-gradient(90deg,#fff0a9,#fff8d8)!important;
+  border-radius:12px!important;
+  padding:8px 12px 8px 54px!important;
+  position:relative!important;
+}
+#workList .done-title,
+#workList .completed-title{
+  background:linear-gradient(90deg,#dff4ff,#eefaff)!important;
+  border-radius:12px!important;
+  padding:8px 12px 8px 54px!important;
+  position:relative!important;
+}
+
+/* tiny Shin-chan-like decorative face, drawn with CSS so no screenshot/background is introduced */
+#workList .pending-title::before,
+#workList .unfinished-title::before,
+#workList .done-title::before,
+#workList .completed-title::before{
+  content:"";
+  position:absolute;
+  left:12px;top:50%;transform:translateY(-50%);
+  width:32px;height:25px;border-radius:50% 50% 45% 45%;
+  background:#ffd0ad;
+  border:2px solid #34231e;
+  box-shadow:inset 0 -6px 0 #ef4c4c;
+}
+
+/* keep task cards clean */
+#workList .task-row{
+  background:#fffdf9!important;
+  border-color:#eadfce!important;
+}
+#workList .completed-row{
+  background:#fffdf9!important;
+  border-color:#dcecf5!important;
+  text-decoration:none!important;
+}
+#workList .completed-row *{
+  text-decoration:none!important;
+}
+
+/* Tomorrow / undo buttons remain same size; visual tone only */
+#workList button{
+  background:#fffdf8;
+}
+</style>
+</head><body><div class="app"><h1>Lynn’s Work Book</h1><div class="meta">待办 · 重要日期 · Email Memo · 备忘录 · 资料备份</div>
 <div class="tabs"><button class="tab active" data-p="workmaster">工作列表</button><button class="tab" data-p="dates">重要日期</button><button class="tab" data-p="email">Email Memo</button><button class="tab" data-p="address">Email Address</button><button class="tab" data-p="notes">备忘录</button><button class="tab" data-p="backup">资料备份</button></div><div class="nav-drag-hint">↕ 拖动按钮可重新排列</div>
 <section id="workmaster" class="panel active">
 <div class="row" style="margin-bottom:14px">
