@@ -31,8 +31,20 @@ button,input,textarea,select{font:inherit}.tabs{display:grid;grid-template-colum
  #workList .task-action{padding:6px 8px}
 }
 </style>
-</head><body><div class="app"><h1>💼 我的工作记录</h1><div class="meta">待办 · 重要日期 · Email Memo · 备忘录 · 资料备份</div>
-<div class="tabs"><button class="tab active" data-p="workmaster">🗂️ 工作列表</button><button class="tab" data-p="dates">📅 重要日期</button><button class="tab" data-p="email">📧 Email Memo</button><button class="tab" data-p="address">📇 Email Address</button><button class="tab" data-p="notes">📝 备忘录</button><button class="tab" data-p="backup">💾 资料备份</button></div>
+<style id="shinchan-theme-v21">
+:root{--cream:#fff8e8;--paper:#fffdf8;--red:#e84b4b;--yellow:#ffd968;--blue:#9fd9ed;--pink:#f7c6cf;--ink:#3f4148;--line:#eadfce}
+body{background:var(--cream);color:var(--ink)}
+.card{background:var(--paper);border-color:var(--line);box-shadow:0 3px 10px rgba(91,72,50,.05)}
+.tab,.btn{border-color:var(--line);background:#fffdf9}.tab:hover,.btn:hover{background:#fff5d8}
+.tab.active,.primary{background:var(--red);color:#fff;border-color:var(--red)}
+.badge{background:#fff0b8;color:#735b20}input,textarea,select{background:#fff;border-color:#e6d8c6}
+.danger{color:#c64a4a}.app>h1{color:#333}.app>h1::before{content:"👦🏻 ";font-size:.95em}.app>h1::after{content:"  ✏️";font-size:.72em}
+.tabs .tab:nth-child(4n+1){border-left:4px solid var(--red)}.tabs .tab:nth-child(4n+2){border-left:4px solid var(--yellow)}
+.tabs .tab:nth-child(4n+3){border-left:4px solid var(--blue)}.tabs .tab:nth-child(4n){border-left:4px solid var(--pink)}
+.tabs .tab.active{border-left-color:#b72e2e}#workList .task-row{border-color:#eee1d1;background:#fffdf9}
+#workList .completed-row{background:#f8f5ef}.nav-drag-hint{font-size:11px;color:#9b8d7d;margin:7px 0 0;text-align:center}
+</style></head><body><div class="app"><h1>Lynn’s Work Book</h1><div class="meta">待办 · 重要日期 · Email Memo · 备忘录 · 资料备份</div>
+<div class="tabs"><button class="tab active" data-p="workmaster">🗂️ 工作列表</button><button class="tab" data-p="dates">📅 重要日期</button><button class="tab" data-p="email">📧 Email Memo</button><button class="tab" data-p="address">📇 Email Address</button><button class="tab" data-p="notes">📝 备忘录</button><button class="tab" data-p="backup">💾 资料备份</button></div><div class="nav-drag-hint">↕ 拖动按钮可重新排列</div>
 <section id="workmaster" class="panel active">
 <div class="row" style="margin-bottom:14px">
   <button class="btn primary" id="showAddWorkBtn" onclick="showWorkBox('add')">＋ 新增工作</button>
@@ -254,5 +266,18 @@ function render(){
 
   dateList.innerHTML=d.dates.sort((a,b)=>a.date.localeCompare(b.date)).map(x=>`<div class="item"><b>${esc(x.title)}</b> <span class="badge">${esc(x.type)}</span><div class="meta">${x.date}</div><button class="danger" onclick="delD(${x.id})">删除</button></div>`).join('')||'<div class="empty">还没有重要日期</div>';
  let z=(es?.value||'').toLowerCase(),em=d.emails.filter(x=>!z||(x.title+' '+x.body).toLowerCase().includes(z));emailList.innerHTML=em.map(x=>`<div class="card"><b>${esc(x.title)}</b><div class="note">${esc(x.body)}</div><div class="actions"><button class="btn" onclick="copyE(${x.id})">📋 Copy</button><button class="btn" onclick="editE(${x.id})">✏️ Edit</button><button class="danger" onclick="delE(${x.id})">🗑️ Delete</button></div></div>`).join('')||'<div class="card empty">还没有 Email Memo</div>';let aq=(as?.value||'').trim().toLowerCase();let adr=d.addresses.filter(x=>!aq||[x.company,x.billing,x.soa,x.note].join(' ').toLowerCase().includes(aq));addressList.innerHTML=adr.length?adr.map(x=>`<div class="card"><div class="title">${esc(x.company||'未填写公司')}</div>${x.billing?`<div class="item"><b>Billing Email</b><div class="note">${esc(x.billing)}</div><button class="btn" onclick="copyA(${x.id},'billing')">📋 Copy</button></div>`:''}${x.soa?`<div class="item"><b>SOA Email</b><div class="note">${esc(x.soa)}</div><button class="btn" onclick="copyA(${x.id},'soa')">📋 Copy</button></div>`:''}${x.note?`<div class="note"><b>备注：</b>${esc(x.note)}</div>`:''}<div class="actions"><button class="btn" onclick="editA(${x.id})">✏️ Edit</button><button class="danger" onclick="delA(${x.id})">🗑️ Delete</button></div></div>`).join(''):'<div class="card empty">还没有 Email Address</div>';noteList.innerHTML=d.notes.map(x=>`<div class="card"><b>${esc(x.title)}</b><div class="note">${esc(x.body)}</div><button class="danger" onclick="delN(${x.id})">删除</button></div>`).join('')||'<div class="card empty">还没有备忘录</div>'}
-newWorkKindChanged();sched();render();
+function initNavDrag(){
+ const tabs=document.querySelector('.tabs');if(!tabs)return;
+ const key='workApp_navOrder_v1';let saved=[];
+ try{saved=JSON.parse(localStorage.getItem(key)||'[]')}catch(e){}
+ saved.forEach(id=>{let el=tabs.querySelector('.tab[data-p="'+id+'"]');if(el)tabs.appendChild(el)});
+ let dragging=null;
+ [...tabs.querySelectorAll('.tab')].forEach(btn=>{
+   btn.draggable=true;
+   btn.addEventListener('dragstart',e=>{dragging=btn;btn.style.opacity='.55';if(e.dataTransfer)e.dataTransfer.effectAllowed='move'});
+   btn.addEventListener('dragend',()=>{btn.style.opacity='';dragging=null;localStorage.setItem(key,JSON.stringify([...tabs.querySelectorAll('.tab')].map(x=>x.dataset.p)))});
+   btn.addEventListener('dragover',e=>{e.preventDefault();if(!dragging||dragging===btn)return;let r=btn.getBoundingClientRect();tabs.insertBefore(dragging,e.clientY<r.top+r.height/2?btn:btn.nextSibling)});
+ });
+}
+initNavDrag();newWorkKindChanged();sched();render();
 </script></body></html>
