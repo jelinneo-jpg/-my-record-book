@@ -264,11 +264,13 @@ input,textarea,select{
  background-size:contain!important;
 }
 </style>
-<style id="v46-all-pages-banner">
-/* Same reclining Shin-chan + Shiro decoration on the top-right of every page.
-   Visual decoration only; no app dimensions or functionality changed. */
-.page{position:relative!important}
-.page:not(#workmaster)::before{
+<style id="v47-fixed-all-page-banner">
+/* FIX: target the app's real page sections, not the nonexistent .page class.
+   Decoration only — no app dimensions, controls, data, or JS behavior changed. */
+#dates,#email,#address,#notes,#backup{
+  position:relative!important;
+}
+#dates::before,#email::before,#address::before,#notes::before,#backup::before{
   content:""!important;
   position:absolute!important;
   right:8px!important;
@@ -279,7 +281,10 @@ input,textarea,select{
   pointer-events:none!important;
   z-index:0!important;
 }
-.page>*{position:relative;z-index:1}
+#dates>*,#email>*,#address>*,#notes>*,#backup>*{
+  position:relative;
+  z-index:1;
+}
 </style>
 </head><body><div class="app"><h1>Lynn’s Work Book</h1><div class="meta">待办 · 重要日期 · Email Memo · 备忘录 · 资料备份</div>
 <div class="tabs"><button class="tab active" data-p="workmaster">工作列表</button><button class="tab" data-p="dates">重要日期</button><button class="tab" data-p="email">Email Memo</button><button class="tab" data-p="address">Email Address</button><button class="tab" data-p="notes">备忘录</button><button class="tab" data-p="backup">资料备份</button></div><div class="nav-drag-hint">↕ 拖动按钮可重新排列</div>
