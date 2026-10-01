@@ -169,7 +169,7 @@ function render(){
  let p=a.filter(x=>!isDone(x,t)),q=a.filter(x=>isDone(x,t));
  let yesterdayPending=d.works.filter(x=>{
    let was=(x.activeDates||[]).includes(y)||(x.type==='weekly'&&x.days.includes(ydow))||(x.type==='monthly'&&Number(x.monthDay)===yd.getDate());
-   return was&&!isDone(x,y);
+   return was&&!isDone(x,y)&&!isDone(x,t);
  });
 
  let pendingCard=x=>`<div class="item"><label><input type="checkbox" onchange="toggle(${x.id})"> <span class="title">${esc(x.title)}</span></label>${x.notes?`<div class="note">${esc(x.notes)}</div>`:''}<div class="actions"><button class="btn" onclick="tomorrow(${x.id})">明天再做</button></div></div>`;
