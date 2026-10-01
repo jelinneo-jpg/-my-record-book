@@ -286,9 +286,54 @@ input,textarea,select{
   z-index:1;
 }
 </style>
+
+<style id="v48-settings-manual-order">
+.top-settings-btn{
+  position:absolute!important;
+  right:4px!important;
+  top:31px!important;
+  width:34px!important;height:34px!important;
+  min-width:34px!important;
+  padding:0!important;
+  border:1px solid #eadfce!important;
+  border-radius:50%!important;
+  background:#fffdf9!important;
+  box-shadow:0 2px 7px rgba(93,69,43,.10)!important;
+  font-size:17px!important;
+  line-height:32px!important;
+  text-align:center!important;
+  cursor:pointer!important;
+  z-index:8!important;
+}
+.work-settings-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.22);
+  z-index:9999;align-items:center;justify-content:center;padding:18px;
+}
+.work-settings-overlay[style*="display: block"]{display:flex!important}
+.work-settings-box{
+  width:min(390px,92vw);max-height:80vh;overflow:auto;
+  background:#fffdf9;border:1px solid #eadfce;border-radius:18px;
+  padding:16px;box-shadow:0 14px 40px rgba(0,0,0,.18)
+}
+.work-settings-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;font-size:18px}
+.settings-close{border:0;background:transparent;font-size:27px;line-height:1;cursor:pointer;color:#76675c}
+.settings-menu-btn{
+  width:100%;text-align:left;margin:6px 0;padding:12px 14px;border:1px solid #eadfce;
+  border-radius:12px;background:#fff;cursor:pointer;font-size:15px
+}
+.settings-note{font-size:13px;color:#8b7a6c;margin:10px 2px 7px}
+.nav-order-row{
+  display:grid;grid-template-columns:1fr 38px 38px;gap:7px;align-items:center;
+  padding:8px 4px;border-bottom:1px solid #f0e6d8
+}
+.nav-order-row button{
+  width:36px;height:32px;padding:0;border:1px solid #eadfce;border-radius:9px;background:#fff;cursor:pointer
+}
+</style>
 </head><body><div class="app"><h1>Lynn’s Work Book</h1><div class="meta">待办 · 重要日期 · Email Memo · 备忘录 · 资料备份</div>
-<div class="tabs"><button class="tab active" data-p="workmaster">工作列表</button><button class="tab" data-p="dates">重要日期</button><button class="tab" data-p="email">Email Memo</button><button class="tab" data-p="address">Email Address</button><button class="tab" data-p="notes">备忘录</button><button class="tab" data-p="backup">资料备份</button></div><div class="nav-drag-hint">↕ 拖动按钮可重新排列</div>
+<div class="tabs"><button class="tab active" data-p="workmaster">工作列表</button><button class="tab" data-p="dates">重要日期</button><button class="tab" data-p="email">Email Memo</button><button class="tab" data-p="address">Email Address</button><button class="tab" data-p="notes">备忘录</button></div>
 <section id="workmaster" class="panel active">
+<button class="top-settings-btn" type="button" onclick="openWorkSettings()" title="设定" aria-label="设定">⚙️</button>
 <div class="row" style="margin-bottom:14px">
   <button class="btn primary" id="showAddWorkBtn" onclick="showWorkBox('add')">＋ 新增工作</button>
   <button class="btn" id="showMasterBtn" onclick="showWorkBox('master')">🗂️ 我的工作列表</button>
@@ -345,10 +390,15 @@ input,textarea,select{
   <div id="workList"></div>
 </div>
 </section>
-<section id="dates" class="panel"><div class="page-actionbar"><button class="btn primary" onclick="togglePageAdd('dateAddCard')">＋ 新增重要日期</button></div><div class="card add-form-hidden" id="dateAddCard"><h3>新增重要日期</h3><div class="row"><input id="dt" type="text" placeholder="例如：Month End Closing" style="flex:1"><input id="dd" type="date"><select id="dtype"><option>Closing</option><option>Follow-up</option><option>Meeting</option><option>其他</option></select><button class="btn primary" onclick="addDate()">新增</button></div></div><div class="card" id="dateList"></div></section>
-<section id="email" class="panel"><div class="page-actionbar"><button class="btn primary" onclick="togglePageAdd('emailAddCard')">＋ 新增 Email Memo</button></div><div class="card add-form-hidden" id="emailAddCard"><h3>📧 新增 Email Memo</h3><input id="es" type="text" placeholder="🔍 搜索标题或内容" oninput="render()"><br><br><input id="et" type="text" placeholder="标题，例如：Payment Reminder"><textarea id="eb" placeholder="Email 内容…"></textarea><button class="btn primary" onclick="saveEmail()">保存 Email Memo</button></div><div id="emailList"></div></section>
-<section id="address" class="panel"><div class="page-actionbar"><button class="btn primary" onclick="togglePageAdd('addressAddCard')">＋ 新增 Email Address</button></div><div class="card add-form-hidden" id="addressAddCard"><h3>📇 新增 Email Address</h3><input id="as" type="text" placeholder="🔍 搜索公司、Billing Email、SOA Email 或备注" oninput="render()"><br><br><input id="ac" type="text" placeholder="公司名字"><input id="ab" type="text" placeholder="Billing Email" style="margin-top:10px"><input id="aso" type="text" placeholder="SOA Email" style="margin-top:10px"><textarea id="an" placeholder="备注"></textarea><button class="btn primary" onclick="saveAddress()">保存 Email Address</button></div><div id="addressList"></div></section><section id="notes" class="panel"><div class="page-actionbar"><button class="btn primary" onclick="togglePageAdd('noteAddCard')">＋ 新增备忘录</button></div><div class="card add-form-hidden" id="noteAddCard"><h3>📝 新增备忘录</h3><input id="nt" type="text" placeholder="标题"><textarea id="nb" placeholder="内容…"></textarea><button class="btn primary" onclick="addNote()">保存</button></div><div id="noteList"></div></section>
-<section id="backup" class="panel"><div class="card"><h3>资料备份</h3><p>备份包含待办、重要日期、Email Memo 和备忘录。</p><div class="row"><button class="btn primary" onclick="exp()">📤 导出备份</button><button class="btn" onclick="imp.click()">📥 导入恢复</button><input id="imp" type="file" accept=".json" style="display:none" onchange="importData(event)"></div></div></section>
+<section id="dates" class="panel">
+<button class="top-settings-btn" type="button" onclick="openWorkSettings()" title="设定" aria-label="设定">⚙️</button><div class="page-actionbar"><button class="btn primary" onclick="togglePageAdd('dateAddCard')">＋ 新增重要日期</button></div><div class="card add-form-hidden" id="dateAddCard"><h3>新增重要日期</h3><div class="row"><input id="dt" type="text" placeholder="例如：Month End Closing" style="flex:1"><input id="dd" type="date"><select id="dtype"><option>Closing</option><option>Follow-up</option><option>Meeting</option><option>其他</option></select><button class="btn primary" onclick="addDate()">新增</button></div></div><div class="card" id="dateList"></div></section>
+<section id="email" class="panel">
+<button class="top-settings-btn" type="button" onclick="openWorkSettings()" title="设定" aria-label="设定">⚙️</button><div class="page-actionbar"><button class="btn primary" onclick="togglePageAdd('emailAddCard')">＋ 新增 Email Memo</button></div><div class="card add-form-hidden" id="emailAddCard"><h3>📧 新增 Email Memo</h3><input id="es" type="text" placeholder="🔍 搜索标题或内容" oninput="render()"><br><br><input id="et" type="text" placeholder="标题，例如：Payment Reminder"><textarea id="eb" placeholder="Email 内容…"></textarea><button class="btn primary" onclick="saveEmail()">保存 Email Memo</button></div><div id="emailList"></div></section>
+<section id="address" class="panel">
+<button class="top-settings-btn" type="button" onclick="openWorkSettings()" title="设定" aria-label="设定">⚙️</button><div class="page-actionbar"><button class="btn primary" onclick="togglePageAdd('addressAddCard')">＋ 新增 Email Address</button></div><div class="card add-form-hidden" id="addressAddCard"><h3>📇 新增 Email Address</h3><input id="as" type="text" placeholder="🔍 搜索公司、Billing Email、SOA Email 或备注" oninput="render()"><br><br><input id="ac" type="text" placeholder="公司名字"><input id="ab" type="text" placeholder="Billing Email" style="margin-top:10px"><input id="aso" type="text" placeholder="SOA Email" style="margin-top:10px"><textarea id="an" placeholder="备注"></textarea><button class="btn primary" onclick="saveAddress()">保存 Email Address</button></div><div id="addressList"></div></section><section id="notes" class="panel">
+<button class="top-settings-btn" type="button" onclick="openWorkSettings()" title="设定" aria-label="设定">⚙️</button><div class="page-actionbar"><button class="btn primary" onclick="togglePageAdd('noteAddCard')">＋ 新增备忘录</button></div><div class="card add-form-hidden" id="noteAddCard"><h3>📝 新增备忘录</h3><input id="nt" type="text" placeholder="标题"><textarea id="nb" placeholder="内容…"></textarea><button class="btn primary" onclick="addNote()">保存</button></div><div id="noteList"></div></section>
+<section id="backup" class="panel">
+<button class="top-settings-btn" type="button" onclick="openWorkSettings()" title="设定" aria-label="设定">⚙️</button><div class="card"><h3>资料备份</h3><p>备份包含待办、重要日期、Email Memo 和备忘录。</p><div class="row"><button class="btn primary" onclick="exp()">📤 导出备份</button><button class="btn" onclick="imp.click()">📥 导入恢复</button><input id="imp" type="file" accept=".json" style="display:none" onchange="importData(event)"></div></div></section>
 </div><script>
 const K='workApp_v2';let d=JSON.parse(localStorage.getItem(K)||'null')||{works:[],dates:[],emails:[],addresses:[],notes:[]};['works','dates','emails','addresses','notes'].forEach(k=>d[k]=d[k]||[]);d.works.forEach(x=>{x.activeDates=x.activeDates||[];x.completed=x.completed||x.completedDates||[];x.days=x.days||x.weekdays||[]});
 const $=x=>document.getElementById(x),esc=s=>String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -518,13 +568,55 @@ function initNavDrag(){
  const key='workApp_navOrder_v1';let saved=[];
  try{saved=JSON.parse(localStorage.getItem(key)||'[]')}catch(e){}
  saved.forEach(id=>{let el=tabs.querySelector('.tab[data-p="'+id+'"]');if(el)tabs.appendChild(el)});
- let dragging=null;
- [...tabs.querySelectorAll('.tab')].forEach(btn=>{
-   btn.draggable=true;
-   btn.addEventListener('dragstart',e=>{dragging=btn;btn.style.opacity='.55';if(e.dataTransfer)e.dataTransfer.effectAllowed='move'});
-   btn.addEventListener('dragend',()=>{btn.style.opacity='';dragging=null;localStorage.setItem(key,JSON.stringify([...tabs.querySelectorAll('.tab')].map(x=>x.dataset.p)))});
-   btn.addEventListener('dragover',e=>{e.preventDefault();if(!dragging||dragging===btn)return;let r=btn.getBoundingClientRect();tabs.insertBefore(dragging,e.clientY<r.top+r.height/2?btn:btn.nextSibling)});
- });
+ [...tabs.querySelectorAll('.tab')].forEach(btn=>btn.draggable=false);
+}
+function openWorkSettings(){
+ const m=document.getElementById('workSettingsModal');
+ if(m){m.style.display='block';renderNavOrderEditor();}
+}
+function closeWorkSettings(){
+ const m=document.getElementById('workSettingsModal');if(m)m.style.display='none';
+}
+function openBackupFromSettings(){
+ closeWorkSettings();
+ const btn=document.querySelector('.tab[data-p="backup"]');
+ if(btn){btn.click();return;}
+ document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+ const p=document.getElementById('backup');if(p)p.classList.add('active');
+}
+function toggleNavOrderEditor(){
+ const e=document.getElementById('navOrderEditor');if(!e)return;
+ e.style.display=e.style.display==='none'?'block':'none';
+ renderNavOrderEditor();
+}
+function renderNavOrderEditor(){
+ const list=document.getElementById('navOrderList'),tabs=document.querySelector('.tabs');if(!list||!tabs)return;
+ const names={workmaster:'工作列表',dates:'重要日期',email:'Email Memo',address:'Email Address',notes:'备忘录'};
+ const arr=[...tabs.querySelectorAll('.tab')].filter(x=>x.dataset.p!=='backup');
+ list.innerHTML=arr.map((b,i)=>'<div class="nav-order-row"><span>'+names[b.dataset.p]+'</span>'+
+ '<button type="button" onclick="moveNavItem('+i+',-1)" '+(i===0?'disabled':'')+'>↑</button>'+
+ '<button type="button" onclick="moveNavItem('+i+',1)" '+(i===arr.length-1?'disabled':'')+'>↓</button></div>').join('');
+}
+function moveNavItem(index,dir){
+ const tabs=document.querySelector('.tabs');if(!tabs)return;
+ const arr=[...tabs.querySelectorAll('.tab')].filter(x=>x.dataset.p!=='backup');
+ const ni=index+dir;if(ni<0||ni>=arr.length)return;
+ const a=arr[index],b=arr[ni];
+ if(dir<0)tabs.insertBefore(a,b);else tabs.insertBefore(b,a);
+ localStorage.setItem('workApp_navOrder_v1',JSON.stringify([...tabs.querySelectorAll('.tab')].map(x=>x.dataset.p)));
+ renderNavOrderEditor();
 }
 initNavDrag();newWorkKindChanged();sched();render();
-</script></body></html>
+</script>
+<div id="workSettingsModal" class="work-settings-overlay" style="display:none" onclick="if(event.target===this)closeWorkSettings()">
+  <div class="work-settings-box">
+    <div class="work-settings-head"><b>⚙️ 设定</b><button type="button" class="settings-close" onclick="closeWorkSettings()">×</button></div>
+    <button type="button" class="settings-menu-btn" onclick="openBackupFromSettings()">💾 资料备份</button>
+    <button type="button" class="settings-menu-btn" onclick="toggleNavOrderEditor()">↕️ 调整导航顺序</button>
+    <div id="navOrderEditor" style="display:none">
+      <div class="settings-note">按 ↑ ↓ 手动移动按钮位置</div>
+      <div id="navOrderList"></div>
+    </div>
+  </div>
+</div>
+</body></html>
