@@ -14,15 +14,52 @@ button,input,textarea,select{font:inherit}.tabs{display:grid;grid-template-colum
 }
 @media(max-width:800px){.app{display:block;padding:15px}.tabs{grid-template-columns:1fr 1fr}}
 </style></head><body><div class="app"><h1>💼 我的工作记录</h1><div class="meta">待办 · 重要日期 · Email Memo · 备忘录 · 资料备份</div>
-<div class="tabs"><button class="tab active" data-p="workmaster">🗂️ 工作列表</button><button class="tab" data-p="todo">📋 今日工作</button><button class="tab" data-p="dates">📅 重要日期</button><button class="tab" data-p="email">📧 Email Memo</button><button class="tab" data-p="address">📇 Email Address</button><button class="tab" data-p="notes">📝 备忘录</button><button class="tab" data-p="backup">💾 资料备份</button></div>
+<div class="tabs"><button class="tab active" data-p="workmaster">🗂️ 工作列表</button><button class="tab" data-p="dates">📅 重要日期</button><button class="tab" data-p="email">📧 Email Memo</button><button class="tab" data-p="address">📇 Email Address</button><button class="tab" data-p="notes">📝 备忘录</button><button class="tab" data-p="backup">💾 资料备份</button></div>
 <section id="workmaster" class="panel active">
-<div style="margin-bottom:14px"><button class="btn primary" id="showAddWorkBtn" onclick="toggleAddWork()">＋ 新增工作</button></div>
-<div class="card" id="addWorkCard" style="display:none"><h3>＋ 新增工作项目</h3><p class="meta">先把经常要做的工作存进「我的工作列表」，需要做时按「加入今日工作」。</p><input id="wt" type="text" placeholder="例如：开发票"><textarea id="wn" placeholder="备注（可不填）"></textarea><div class="row"><select id="wtype" onchange="sched()"><option value="once">普通工作</option><option value="weekly">每周固定</option><option value="monthly">每月固定一次</option></select><div id="once" style="display:none"><input id="wdate" type="date"></div><div id="weekly" class="weekly"><label><input class="wd" type="checkbox" value="1"> 一</label><label><input class="wd" type="checkbox" value="2"> 二</label><label><input class="wd" type="checkbox" value="3"> 三</label><label><input class="wd" type="checkbox" value="4"> 四</label><label><input class="wd" type="checkbox" value="5"> 五</label><label><input class="wd" type="checkbox" value="6"> 六</label><label><input class="wd" type="checkbox" value="0"> 日</label><button class="btn" onclick="weekdays()">一键选工作日（一至五）</button></div><div id="monthly" class="weekly"><label>每月几号：</label><select id="monthDay"><option value="1">1号</option><option value="2">2号</option><option value="3">3号</option><option value="4">4号</option><option value="5">5号</option><option value="6">6号</option><option value="7">7号</option><option value="8">8号</option><option value="9">9号</option><option value="10">10号</option><option value="11">11号</option><option value="12">12号</option><option value="13">13号</option><option value="14">14号</option><option value="15">15号</option><option value="16">16号</option><option value="17">17号</option><option value="18">18号</option><option value="19">19号</option><option value="20">20号</option><option value="21">21号</option><option value="22">22号</option><option value="23">23号</option><option value="24">24号</option><option value="25">25号</option><option value="26">26号</option><option value="27">27号</option><option value="28">28号</option><option value="29">29号</option><option value="30">30号</option><option value="31">31号</option></select></div><button class="btn primary" onclick="addWork()">保存到工作列表</button></div></div>
-<div class="card"><h3>🗂️ 我的工作列表</h3><div id="masterList"></div></div>
+<div class="row" style="margin-bottom:14px">
+  <button class="btn primary" id="showAddWorkBtn" onclick="showWorkBox('add')">＋ 新增工作</button>
+  <button class="btn" id="showMasterBtn" onclick="showWorkBox('master')">🗂️ 我的工作列表</button>
+</div>
 
-</section>
-<section id="todo" class="panel">
-<div class="card"><h3>📋 今日工作</h3><div id="workList"></div></div>
+<div class="card" id="addWorkCard" style="display:none">
+  <h3>＋ 新增工作</h3>
+  <p class="meta">新增后会保存到「我的工作列表」。固定工作会在指定日期自动进入今日工作；单次工作可从工作列表手动加入。</p>
+  <input id="wt" type="text" placeholder="例如：Issue invoice">
+  <textarea id="wn" placeholder="备注（可不填）"></textarea>
+  <div class="row">
+    <select id="wtype" onchange="sched()">
+      <option value="once">单次工作</option>
+      <option value="weekly">每周固定</option>
+      <option value="monthly">每月固定一次</option>
+    </select>
+    <div id="once" style="display:none"></div>
+    <div id="weekly" class="weekly">
+      <label><input class="wd" type="checkbox" value="1"> 一</label>
+      <label><input class="wd" type="checkbox" value="2"> 二</label>
+      <label><input class="wd" type="checkbox" value="3"> 三</label>
+      <label><input class="wd" type="checkbox" value="4"> 四</label>
+      <label><input class="wd" type="checkbox" value="5"> 五</label>
+      <label><input class="wd" type="checkbox" value="6"> 六</label>
+      <label><input class="wd" type="checkbox" value="0"> 日</label>
+      <button class="btn" onclick="weekdays()">一键选工作日（一至五）</button>
+    </div>
+    <div id="monthly" class="weekly">
+      <label>每月几号：</label>
+      <select id="monthDay"><option value="1">1号</option><option value="2">2号</option><option value="3">3号</option><option value="4">4号</option><option value="5">5号</option><option value="6">6号</option><option value="7">7号</option><option value="8">8号</option><option value="9">9号</option><option value="10">10号</option><option value="11">11号</option><option value="12">12号</option><option value="13">13号</option><option value="14">14号</option><option value="15">15号</option><option value="16">16号</option><option value="17">17号</option><option value="18">18号</option><option value="19">19号</option><option value="20">20号</option><option value="21">21号</option><option value="22">22号</option><option value="23">23号</option><option value="24">24号</option><option value="25">25号</option><option value="26">26号</option><option value="27">27号</option><option value="28">28号</option><option value="29">29号</option><option value="30">30号</option><option value="31">31号</option></select>
+    </div>
+    <button class="btn primary" onclick="addWork()">保存到工作列表</button>
+  </div>
+</div>
+
+<div class="card" id="masterCard" style="display:none">
+  <h3>🗂️ 我的工作列表</h3>
+  <div id="masterList"></div>
+</div>
+
+<div class="card">
+  <h3>📋 今日工作</h3>
+  <div id="workList"></div>
+</div>
 </section>
 <section id="dates" class="panel"><div class="card"><h3>新增重要日期</h3><div class="row"><input id="dt" type="text" placeholder="例如：Month End Closing" style="flex:1"><input id="dd" type="date"><select id="dtype"><option>Closing</option><option>Follow-up</option><option>Meeting</option><option>其他</option></select><button class="btn primary" onclick="addDate()">新增</button></div></div><div class="card" id="dateList"></div></section>
 <section id="email" class="panel"><div class="card"><h3>📧 Email Memo</h3><input id="es" type="text" placeholder="🔍 搜索标题或内容" oninput="render()"><br><br><input id="et" type="text" placeholder="标题，例如：Payment Reminder"><textarea id="eb" placeholder="Email 内容…"></textarea><button class="btn primary" onclick="saveEmail()">保存 Email Memo</button></div><div id="emailList"></div></section>
@@ -33,11 +70,18 @@ const K='workApp_v2';let d=JSON.parse(localStorage.getItem(K)||'null')||{works:[
 const $=x=>document.getElementById(x),esc=s=>String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 function ld(x=new Date()){return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`} function save(){localStorage.setItem(K,JSON.stringify(d));render()}
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab,.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');$(b.dataset.p).classList.add('active')});
-function toggleAddWork(){
- let c=document.getElementById('addWorkCard'),b=document.getElementById('showAddWorkBtn');
- let open=c.style.display!=='none';
- c.style.display=open?'none':'block';
- b.textContent=open?'＋ 新增工作':'✕ 取消新增';
+function showWorkBox(which){
+ const add=document.getElementById('addWorkCard'), master=document.getElementById('masterCard');
+ const ab=document.getElementById('showAddWorkBtn'), mb=document.getElementById('showMasterBtn');
+ if(which==='add'){
+   const opening=add.style.display==='none';
+   add.style.display=opening?'block':'none'; master.style.display='none';
+   ab.classList.toggle('primary',opening); mb.classList.remove('primary');
+ }else{
+   const opening=master.style.display==='none';
+   master.style.display=opening?'block':'none'; add.style.display='none';
+   mb.classList.toggle('primary',opening); ab.classList.remove('primary');
+ }
 }
 function sched(){let type=wtype.value;once.style.display='none';weekly.style.display=type==='weekly'?'flex':'none';monthly.style.display=type==='monthly'?'flex':'none'}function weekdays(){document.querySelectorAll('.wd').forEach(x=>x.checked=['1','2','3','4','5'].includes(x.value))}
 function addWork(){
@@ -45,7 +89,7 @@ function addWork(){
  if(!t)return alert('请填写工作内容');
  if(type==='weekly'&&!days.length)return alert('请选择星期');
  d.works.push({id:Date.now(),title:t,notes:wn.value.trim(),type,days,monthDay:type==='monthly'?Number(monthDay.value):null,activeDates:[],completed:[]});
- wt.value='';wn.value='';document.querySelectorAll('.wd').forEach(x=>x.checked=false);save()
+ wt.value='';wn.value='';document.querySelectorAll('.wd').forEach(x=>x.checked=false);save();showWorkBox('master')
 }
 function workActive(x,t=ld()){
   let z=new Date(t+'T12:00:00');return (x.activeDates||[]).includes(t)||(x.type==='weekly'&&x.days.includes(z.getDay()))||(x.type==='monthly'&&Number(x.monthDay)===z.getDate());
@@ -119,7 +163,7 @@ function render(){
  });
  localStorage.setItem(K,JSON.stringify(d));
 
- masterList.innerHTML=d.works.length?d.works.map(x=>`<div class="item"><div class="title">${esc(x.title)}</div>${x.type==='weekly'?`<div class="meta">每周固定：${x.days.map(v=>names[v]).join('・')}</div>`:x.type==='monthly'?`<div class="meta">每月固定：${x.monthDay}号</div>`:'<div class="meta">普通工作</div>'}${x.notes?`<div class="note">${esc(x.notes)}</div>`:''}<div class="actions"><button class="btn primary" onclick="addToday(${x.id})">＋ 加入今日工作</button><button class="danger" onclick="delW(${x.id})">删除</button></div></div>`).join(''):'<div class="empty">还没有保存工作项目</div>';
+ masterList.innerHTML=d.works.length?d.works.map(x=>`<div class="item"><div class="title">${esc(x.title)}</div>${x.type==='weekly'?`<div class="meta">每周固定：${x.days.map(v=>names[v]).join('・')}</div>`:x.type==='monthly'?`<div class="meta">每月固定：${x.monthDay}号</div>`:'<div class="meta">单次工作</div>'}${x.notes?`<div class="note">${esc(x.notes)}</div>`:''}<div class="actions"><button class="btn primary" onclick="addToday(${x.id})">＋ 加入今日工作</button><button class="danger" onclick="delW(${x.id})">删除</button></div></div>`).join(''):'<div class="empty">还没有保存工作项目</div>';
 
  let a=d.works.filter(x=>workActive(x,t));
  let p=a.filter(x=>!isDone(x,t)),q=a.filter(x=>isDone(x,t));
@@ -141,5 +185,5 @@ function render(){
 
  dateList.innerHTML=d.dates.sort((a,b)=>a.date.localeCompare(b.date)).map(x=>`<div class="item"><b>${esc(x.title)}</b> <span class="badge">${esc(x.type)}</span><div class="meta">${x.date}</div><button class="danger" onclick="delD(${x.id})">删除</button></div>`).join('')||'<div class="empty">还没有重要日期</div>';
  let z=(es?.value||'').toLowerCase(),em=d.emails.filter(x=>!z||(x.title+' '+x.body).toLowerCase().includes(z));emailList.innerHTML=em.map(x=>`<div class="card"><b>${esc(x.title)}</b><div class="note">${esc(x.body)}</div><div class="actions"><button class="btn" onclick="copyE(${x.id})">📋 Copy</button><button class="btn" onclick="editE(${x.id})">✏️ Edit</button><button class="danger" onclick="delE(${x.id})">🗑️ Delete</button></div></div>`).join('')||'<div class="card empty">还没有 Email Memo</div>';let aq=(as?.value||'').trim().toLowerCase();let adr=d.addresses.filter(x=>!aq||[x.company,x.billing,x.soa,x.note].join(' ').toLowerCase().includes(aq));addressList.innerHTML=adr.length?adr.map(x=>`<div class="card"><div class="title">${esc(x.company||'未填写公司')}</div>${x.billing?`<div class="item"><b>Billing Email</b><div class="note">${esc(x.billing)}</div><button class="btn" onclick="copyA(${x.id},'billing')">📋 Copy</button></div>`:''}${x.soa?`<div class="item"><b>SOA Email</b><div class="note">${esc(x.soa)}</div><button class="btn" onclick="copyA(${x.id},'soa')">📋 Copy</button></div>`:''}${x.note?`<div class="note"><b>备注：</b>${esc(x.note)}</div>`:''}<div class="actions"><button class="btn" onclick="editA(${x.id})">✏️ Edit</button><button class="danger" onclick="delA(${x.id})">🗑️ Delete</button></div></div>`).join(''):'<div class="card empty">还没有 Email Address</div>';noteList.innerHTML=d.notes.map(x=>`<div class="card"><b>${esc(x.title)}</b><div class="note">${esc(x.body)}</div><button class="danger" onclick="delN(${x.id})">删除</button></div>`).join('')||'<div class="card empty">还没有备忘录</div>'}
-wdate.value=ld();sched();render();
+sched();render();
 </script></body></html>
