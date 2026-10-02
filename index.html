@@ -3,6 +3,10 @@
 *{box-sizing:border-box}body{margin:0;font-family:Arial,"Microsoft YaHei",sans-serif;background:#f5f6f8;color:#253044}.app{max-width:1180px;margin:auto;padding:28px}
 button,input,textarea,select{font:inherit}.tabs{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin:20px 0}.tab,.btn{border:1px solid #dfe3e8;background:#fff;padding:13px;border-radius:12px;cursor:pointer}.tab.active,.primary{background:#253044;color:#fff;border-color:#253044}.panel{display:none}.panel.active{display:block}.card{background:#fff;border:1px solid #e4e7eb;border-radius:16px;padding:18px;margin-bottom:14px}.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}input,textarea,select{border:1px solid #d9dde5;border-radius:10px;padding:10px}input[type=text],textarea{width:100%}textarea{min-height:90px}.item{padding:12px 0;border-bottom:1px solid #eee}.item:last-child{border:0}.title{font-weight:700}.meta{font-size:13px;color:#7d8797;margin-top:4px}.note{white-space:pre-wrap;margin-top:7px;line-height:1.5}.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.danger{border:0;background:transparent;color:#b34b4b;cursor:pointer}.done .title{color:#253044}.badge{font-size:12px;background:#eef1f5;padding:4px 8px;border-radius:20px}.empty{color:#999;padding:18px;text-align:center}.weekly{display:none;gap:7px;flex-wrap:wrap;align-items:center}
 @media(max-width:800px){.tabs{grid-template-columns:1fr 1fr}.app{padding:15px}}
+
+.event-field{display:flex;align-items:center;gap:5px;font-size:12px;color:#806e61;white-space:nowrap}
+.event-field input{width:auto}
+.calendar-event-time{font-weight:700;margin-right:4px}
 </style><style id="left-nav-layout">
 @media (min-width:801px){
 .app{max-width:1180px;margin:auto;padding:28px;display:grid;grid-template-columns:210px minmax(0,1fr);column-gap:22px;align-items:start}
@@ -427,7 +431,10 @@ top:0!important;height:118px!important;background-position:right top!important;b
   <h3 id="dateFormTitle">新增 Event</h3>
   <div class="row">
     <input id="dt" type="text" placeholder="Event 名称，例如：Month End Closing" style="flex:1">
-    <input id="dd" type="date">
+    <label class="event-field">开始日期 <input id="dd" type="date"></label>
+    <label class="event-field">结束日期 <input id="ddEnd" type="date"></label>
+    <label class="event-field">开始时间 <input id="timeStart" type="time"></label>
+    <label class="event-field">结束时间 <input id="timeEnd" type="time"></label>
     <select id="dtype">
       <option value="工作">💼 工作</option>
       <option value="会议">👥 会议</option>
@@ -569,20 +576,26 @@ function tomorrow(id){
 function delW(id){if(confirm('确定删除这项工作吗？')){d.works=d.works.filter(x=>x.id!==id);save()}}
 let calendarView=new Date(),calendarEditId=null;
 function openCalendarEvent(date){
- calendarEditId=null;dateFormTitle.textContent='新增 Event';dt.value='';dd.value=date||'';dtype.value='工作';
+ calendarEditId=null;dateFormTitle.textContent='新增 Event';dt.value='';
+ dd.value=date||'';ddEnd.value=date||'';timeStart.value='';timeEnd.value='';dtype.value='工作';
  document.getElementById('dateAddCard').style.display='block';dt.focus();
 }
 function cancelCalendarEvent(){calendarEditId=null;document.getElementById('dateAddCard').style.display='none'}
 function addDate(){
- if(!dt.value.trim()||!dd.value)return alert('请填写 Event 名称和日期');
- if(calendarEditId){
-   let x=d.dates.find(a=>a.id===calendarEditId);if(x)Object.assign(x,{title:dt.value.trim(),date:dd.value,type:dtype.value});
- }else d.dates.push({id:Date.now(),title:dt.value.trim(),date:dd.value,type:dtype.value});
- calendarEditId=null;dt.value='';dd.value='';document.getElementById('dateAddCard').style.display='none';save();
+ if(!dt.value.trim()||!dd.value)return alert('请填写 Event 名称和开始日期');
+ let end=ddEnd.value||dd.value;
+ if(end<dd.value)return alert('结束日期不能早于开始日期');
+ if(timeStart.value&&timeEnd.value&&end===dd.value&&timeEnd.value<timeStart.value)return alert('结束时间不能早于开始时间');
+ let obj={title:dt.value.trim(),date:dd.value,endDate:end,startTime:timeStart.value,endTime:timeEnd.value,type:dtype.value};
+ if(calendarEditId){let x=d.dates.find(a=>a.id===calendarEditId);if(x)Object.assign(x,obj)}
+ else d.dates.push(Object.assign({id:Date.now()},obj));
+ calendarEditId=null;dt.value='';dd.value='';ddEnd.value='';timeStart.value='';timeEnd.value='';
+ document.getElementById('dateAddCard').style.display='none';save();
 }
 function editCalendarEvent(id,e){
  if(e)e.stopPropagation();let x=d.dates.find(a=>a.id===id);if(!x)return;
- calendarEditId=id;dateFormTitle.textContent='编辑 Event';dt.value=x.title;dd.value=x.date;dtype.value=x.type||'其他';
+ calendarEditId=id;dateFormTitle.textContent='编辑 Event';dt.value=x.title;dd.value=x.date;
+ ddEnd.value=x.endDate||x.date;timeStart.value=x.startTime||'';timeEnd.value=x.endTime||'';dtype.value=x.type||'其他';
  document.getElementById('dateAddCard').style.display='block';dt.focus();
 }
 function delD(id){if(confirm('确定删除这个 Event 吗？')){d.dates=d.dates.filter(x=>x.id!==id);save()}}
@@ -594,6 +607,15 @@ function eventIcon(type){
 function eventClass(type){
  return {'工作':'ev-work','Closing':'ev-work','Follow-up':'ev-work','会议':'ev-meeting','Meeting':'ev-meeting','财务':'ev-finance','旅行':'ev-travel','个人':'ev-personal','生日/纪念日':'ev-birthday','假期':'ev-holiday','其他':'ev-other'}[type]||'ev-other'
 }
+function eventTimeText(x,ds){
+ let st=x.startTime||'',et=x.endTime||'',start=x.date,end=x.endDate||x.date;
+ if(!st&&!et)return '';
+ if(start===end)return st+(et?'–'+et:'');
+ if(ds===start)return st?(st+' →'):'';
+ if(ds===end)return et?('→ '+et):'';
+ return '';
+}
+function eventOccursOn(x,ds){return ds>=x.date&&ds<=(x.endDate||x.date)}
 function renderCalendar(){
  const grid=document.getElementById('calendarGrid'),title=document.getElementById('calendarMonthTitle');if(!grid||!title)return;
  const y=calendarView.getFullYear(),m=calendarView.getMonth();title.textContent=y+'年 '+(m+1)+'月';
@@ -601,10 +623,11 @@ function renderCalendar(){
  let html='';
  for(let i=0;i<42;i++){
    let z=new Date(start);z.setDate(start.getDate()+i);let ds=ld(z),inMonth=z.getMonth()===m,dow=z.getDay();
-   let ev=d.dates.filter(x=>x.date===ds).sort((a,b)=>String(a.title).localeCompare(String(b.title)));
+   let ev=d.dates.filter(x=>eventOccursOn(x,ds)).sort((a,b)=>(a.startTime||'').localeCompare(b.startTime||''));
    html+='<div class="calendar-day '+(!inMonth?'other ':'')+(ds===today?'today ':'')+(dow===6?'sat ':'')+(dow===0?'sun ':'')+'" data-date="'+ds+'" onclick="openCalendarEvent(this.dataset.date)">'+
      '<div class="calendar-num">'+z.getDate()+'</div>'+
-     ev.map(x=>'<button class="calendar-event '+eventClass(x.type)+'" onclick="editCalendarEvent('+x.id+',event)" title="'+esc(x.title)+'">'+eventIcon(x.type)+' '+esc(x.title)+'</button>').join('')+
+     ev.map(x=>{let tm=eventTimeText(x,ds);return '<button class="calendar-event '+eventClass(x.type)+'" onclick="editCalendarEvent('+x.id+',event)" title="'+esc(x.title)+'">'+
+       (tm?'<span class="calendar-event-time">'+tm+'</span>':'')+eventIcon(x.type)+' '+esc(x.title)+'</button>'}).join('')+
      '</div>';
  }
  grid.innerHTML=html;
