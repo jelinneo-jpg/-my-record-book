@@ -594,7 +594,7 @@ function renderCalendar(){
  for(let i=0;i<42;i++){
    let z=new Date(start);z.setDate(start.getDate()+i);let ds=ld(z),inMonth=z.getMonth()===m,dow=z.getDay();
    let ev=d.dates.filter(x=>x.date===ds).sort((a,b)=>String(a.title).localeCompare(String(b.title)));
-   html+='<div class="calendar-day '+(!inMonth?'other ':'')+(ds===today?'today ':'')+(dow===6?'sat ':'')+(dow===0?'sun ':'')+'" onclick="openCalendarEvent(\\''+ds+'\\')">'+
+   html+='<div class="calendar-day '+(!inMonth?'other ':'')+(ds===today?'today ':'')+(dow===6?'sat ':'')+(dow===0?'sun ':'')+'" data-date="'+ds+'" onclick="openCalendarEvent(this.dataset.date)">'+
      '<div class="calendar-num">'+z.getDate()+'</div>'+
      ev.map(x=>'<button class="calendar-event '+eventClass(x.type)+'" onclick="editCalendarEvent('+x.id+',event)" title="'+esc(x.title)+'">'+esc(x.title)+'</button>').join('')+
      '</div>';
