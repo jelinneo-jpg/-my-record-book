@@ -389,6 +389,15 @@ top:0!important;height:118px!important;background-position:right top!important;b
 .lunar-text{font-size:10px;font-weight:500;color:#9a8173;white-space:nowrap}
 .lunar-festival{font-size:10px;font-weight:700;color:#b85b4a;white-space:nowrap}
 .sg-holiday{background:#fff0f0!important;border-color:#efb7b7!important;color:#a53b3b!important}
+</style><style id="v57-sg-flag-memo-calendar">
+.sg-flag{display:inline-block;width:18px;height:12px;border:1px solid #ddd;border-radius:2px;vertical-align:-2px;margin-right:4px;overflow:hidden;background:linear-gradient(to bottom,#ef3340 0 50%,#fff 50% 100%);position:relative;flex:0 0 auto}
+.sg-flag:before{content:"";position:absolute;left:3px;top:2px;width:5px;height:5px;border-radius:50%;background:#fff}
+.sg-flag:after{content:"";position:absolute;left:5px;top:2px;width:5px;height:5px;border-radius:50%;background:#ef3340}
+.memo-calendar-event{background:#fff7d8!important;border-color:#ead78a!important;color:#705c19!important;cursor:pointer}
+.memo-calendar-modal{position:fixed;inset:0;background:rgba(30,24,20,.38);display:none;align-items:center;justify-content:center;padding:18px;z-index:9999}
+.memo-calendar-box{width:min(520px,92vw);max-height:78vh;overflow:auto;background:#fffdf8;border-radius:18px;padding:20px;box-shadow:0 18px 55px rgba(0,0,0,.18)}
+.memo-calendar-body{white-space:pre-wrap;line-height:1.6;margin-top:12px}
+.memo-calendar-date{font-size:13px;color:#8c7a6d;margin-top:5px}
 </style></head><body><div class="app"><h1>Lynn’s Work Book</h1><div class="meta">待办 · 重要日期 · Email Memo · 备忘录 · 资料备份</div>
 <div class="tabs"><button class="tab active" data-p="workmaster">工作列表</button><button class="tab" data-p="dates">重要日期</button><button class="tab" data-p="email">Email Memo</button><button class="tab" data-p="address">Email Address</button><button class="tab" data-p="notes">备忘录</button></div>
 <section id="workmaster" class="panel active">
@@ -675,6 +684,26 @@ function lunarInfo(date){
   return {text,festival};
  }catch(e){return {text:'',festival:''}}
 }
+
+function memoCalendarDateInput(id){
+ let x=d.notes.find(n=>n.id===id);if(!x)return;
+ let v=prompt('要把这份备忘录放在哪一天？\\n请输入日期：YYYY-MM-DD',x.calendarDate||ld());
+ if(!v)return;
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(v))return alert('日期格式请输入 YYYY-MM-DD');
+ x.calendarDate=v;save();alert('已加入日历');
+}
+function removeMemoCalendar(id){
+ let x=d.notes.find(n=>n.id===id);if(!x)return;
+ if(confirm('确定从日历移除这份备忘录吗？')){delete x.calendarDate;save()}
+}
+function openMemoCalendar(id,e){
+ if(e)e.stopPropagation();let x=d.notes.find(n=>n.id===id);if(!x)return;
+ document.getElementById('memoCalendarTitle').textContent='📝 '+(x.title||'备忘录');
+ document.getElementById('memoCalendarDate').textContent=x.calendarDate||'';
+ document.getElementById('memoCalendarBody').textContent=x.body||'';
+ document.getElementById('memoCalendarModal').style.display='flex';
+}
+function closeMemoCalendar(){document.getElementById('memoCalendarModal').style.display='none'}
 function renderCalendar(){
  const grid=document.getElementById('calendarGrid'),title=document.getElementById('calendarMonthTitle');if(!grid||!title)return;
  const y=calendarView.getFullYear(),m=calendarView.getMonth();title.textContent=y+'年 '+(m+1)+'月';
@@ -686,7 +715,8 @@ function renderCalendar(){
    let li=lunarInfo(z),lunarHtml=li.festival?'<span class="lunar-festival">'+(LUNAR_FESTIVAL_ICON[li.festival]||'🏮')+' '+li.festival+'</span>':'<span class="lunar-text">'+li.text+'</span>',sg=SG_HOLIDAYS[ds]||'';
    html+='<div class="calendar-day '+(!inMonth?'other ':'')+(ds===today?'today ':'')+(dow===6?'sat ':'')+(dow===0?'sun ':'')+'" data-date="'+ds+'" onclick="openCalendarEvent(this.dataset.date)">'+
      '<div class="calendar-num"><span>'+z.getDate()+'</span>'+lunarHtml+'</div>'+
-     (sg?'<div class="calendar-event sg-holiday">🇸🇬 '+esc(sg)+'</div>':'')+
+     (sg?'<div class="calendar-event sg-holiday"><span class="sg-flag" aria-label="Singapore flag"></span>'+esc(sg)+'</div>':'')+
+     d.notes.filter(n=>n.calendarDate===ds).map(n=>'<button class="calendar-event memo-calendar-event" onclick="openMemoCalendar('+n.id+',event)" title="'+esc(n.title||'备忘录')+'">📝 备忘录</button>').join('')+
      ev.map(x=>{let tm=eventTimeText(x,ds);return '<button class="calendar-event '+eventClass(x.type)+'" onclick="editCalendarEvent('+x.id+',event)" title="'+esc(x.title)+'">'+
        (tm?'<span class="calendar-event-time">'+tm+'</span>':'')+eventIcon(x.type)+' '+esc(x.title)+'</button>'}).join('')+
      '</div>';
@@ -754,7 +784,7 @@ function render(){
    <div class="work-section-title"><b>已完成 ✅</b><span class="badge">${q.length}</span></div>
    ${q.map(doneCard).join('')||'<div class="empty">还没有完成项目</div>'}`;
   renderCalendar();
- let z=(es?.value||'').toLowerCase(),em=d.emails.filter(x=>!z||(x.title+' '+x.body).toLowerCase().includes(z));emailList.innerHTML=em.map(x=>`<div class="card"><b>${esc(x.title)}</b><div class="note">${esc(x.body)}</div><div class="actions"><button class="btn" onclick="copyE(${x.id})">📋 Copy</button><button class="btn" onclick="editE(${x.id})">✏️ Edit</button><button class="danger" onclick="delE(${x.id})">🗑️ Delete</button></div></div>`).join('')||'<div class="card empty">还没有 Email Memo</div>';let aq=(as?.value||'').trim().toLowerCase();let adr=d.addresses.filter(x=>!aq||[x.company,x.billing,x.soa,x.note].join(' ').toLowerCase().includes(aq));addressList.innerHTML=adr.length?adr.map(x=>`<div class="card"><div class="title">${esc(x.company||'未填写公司')}</div>${x.billing?`<div class="item"><b>Billing Email</b><div class="note">${esc(x.billing)}</div><button class="btn" onclick="copyA(${x.id},'billing')">📋 Copy</button></div>`:''}${x.soa?`<div class="item"><b>SOA Email</b><div class="note">${esc(x.soa)}</div><button class="btn" onclick="copyA(${x.id},'soa')">📋 Copy</button></div>`:''}${x.note?`<div class="note"><b>备注：</b>${esc(x.note)}</div>`:''}<div class="actions"><button class="btn" onclick="editA(${x.id})">✏️ Edit</button><button class="danger" onclick="delA(${x.id})">🗑️ Delete</button></div></div>`).join(''):'<div class="card empty">还没有 Email Address</div>';noteList.innerHTML=d.notes.map(x=>`<div class="card"><b>${esc(x.title)}</b><div class="note">${esc(x.body)}</div><button class="danger" onclick="delN(${x.id})">删除</button></div>`).join('')||'<div class="card empty">还没有备忘录</div>'}
+ let z=(es?.value||'').toLowerCase(),em=d.emails.filter(x=>!z||(x.title+' '+x.body).toLowerCase().includes(z));emailList.innerHTML=em.map(x=>`<div class="card"><b>${esc(x.title)}</b><div class="note">${esc(x.body)}</div><div class="actions"><button class="btn" onclick="copyE(${x.id})">📋 Copy</button><button class="btn" onclick="editE(${x.id})">✏️ Edit</button><button class="danger" onclick="delE(${x.id})">🗑️ Delete</button></div></div>`).join('')||'<div class="card empty">还没有 Email Memo</div>';let aq=(as?.value||'').trim().toLowerCase();let adr=d.addresses.filter(x=>!aq||[x.company,x.billing,x.soa,x.note].join(' ').toLowerCase().includes(aq));addressList.innerHTML=adr.length?adr.map(x=>`<div class="card"><div class="title">${esc(x.company||'未填写公司')}</div>${x.billing?`<div class="item"><b>Billing Email</b><div class="note">${esc(x.billing)}</div><button class="btn" onclick="copyA(${x.id},'billing')">📋 Copy</button></div>`:''}${x.soa?`<div class="item"><b>SOA Email</b><div class="note">${esc(x.soa)}</div><button class="btn" onclick="copyA(${x.id},'soa')">📋 Copy</button></div>`:''}${x.note?`<div class="note"><b>备注：</b>${esc(x.note)}</div>`:''}<div class="actions"><button class="btn" onclick="editA(${x.id})">✏️ Edit</button><button class="danger" onclick="delA(${x.id})">🗑️ Delete</button></div></div>`).join(''):'<div class="card empty">还没有 Email Address</div>';noteList.innerHTML=d.notes.map(x=>`<div class="card"><b>${esc(x.title)}</b><div class="note">${esc(x.body)}</div>${x.calendarDate?`<div class="meta">📅 已加入日历：${esc(x.calendarDate)}</div>`:''}<div class="actions"><button class="btn" onclick="memoCalendarDateInput(${x.id})">📅 ${x.calendarDate?'更改日历日期':'加入日历'}</button>${x.calendarDate?`<button class="btn" onclick="removeMemoCalendar(${x.id})">从日历移除</button>`:''}<button class="danger" onclick="delN(${x.id})">删除</button></div></div>`).join('')||'<div class="card empty">还没有备忘录</div>'}
 function initNavDrag(){
  const tabs=document.querySelector('.tabs');if(!tabs)return;
  const key='workApp_navOrder_v1';let saved=[];
@@ -811,4 +841,9 @@ initNavDrag();newWorkKindChanged();sched();render();
     </div>
   </div>
 </div>
-</body></html>
+<div id="memoCalendarModal" class="memo-calendar-modal" onclick="if(event.target===this)closeMemoCalendar()">
+<div class="memo-calendar-box">
+<div class="row" style="justify-content:space-between"><h3 id="memoCalendarTitle" style="margin:0">📝 备忘录</h3><button class="btn" onclick="closeMemoCalendar()">关闭</button></div>
+<div id="memoCalendarDate" class="memo-calendar-date"></div>
+<div id="memoCalendarBody" class="memo-calendar-body"></div>
+</div></div></body></html>
