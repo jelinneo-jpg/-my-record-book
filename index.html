@@ -355,10 +355,10 @@ top:0!important;height:118px!important;background-position:right top!important;b
 .calendar-day.other{background:#fffaf1;color:#aaa}.calendar-day.today{background:#fff1f0;box-shadow:inset 0 0 0 2px #f36b6b}
 .calendar-num{font-size:17px;font-weight:700;margin-bottom:5px}.calendar-day.sat .calendar-num{color:#2583d8}.calendar-day.sun .calendar-num{color:#ef4c4c}
 .calendar-event{display:block;width:100%;border:0;border-radius:8px;padding:5px 7px;margin:4px 0;text-align:left;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;color:#49362d}
-.ev-work{background:#ffd9dd}.ev-meeting{background:#d9ebff}.ev-finance{background:#ffe8a9}.ev-travel{background:#d4f2e5}.ev-personal{background:#ead9ff}.ev-birthday{background:#ffe0c2}.ev-other{background:#ececec}
+.ev-work{background:#ffd9dd}.ev-meeting{background:#d9ebff}.ev-finance{background:#ffe8a9}.ev-travel{background:#d4f2e5}.ev-personal{background:#ead9ff}.ev-birthday{background:#ffe0c2}.ev-holiday{background:#dff3ff}.ev-other{background:#ececec}
 .calendar-legend{display:flex;gap:18px;flex-wrap:wrap;padding:12px 18px;color:#77685f;font-size:13px}
 .calendar-legend span{display:flex;align-items:center;gap:6px}.calendar-legend i{width:13px;height:13px;border-radius:50%;display:inline-block}
-.c-work{background:#f5a9b2}.c-meeting{background:#8fc4ff}.c-finance{background:#ffd66f}.c-travel{background:#83d7b5}.c-personal{background:#c79be8}.c-birthday{background:#ffc58f}
+.c-work{background:#f5a9b2}.c-meeting{background:#8fc4ff}.c-finance{background:#ffd66f}.c-travel{background:#83d7b5}.c-personal{background:#c79be8}.c-birthday{background:#ffc58f}.c-holiday{background:#9edcff}
 @media(max-width:800px){.calendar-card{overflow-x:auto}.calendar-toolbar,.calendar-week,.calendar-grid{min-width:720px}.calendar-day{min-height:100px}.calendar-title{font-size:20px}}
 </style></head><body><div class="app"><h1>Lynn’s Work Book</h1><div class="meta">待办 · 重要日期 · Email Memo · 备忘录 · 资料备份</div>
 <div class="tabs"><button class="tab active" data-p="workmaster">工作列表</button><button class="tab" data-p="dates">重要日期</button><button class="tab" data-p="email">Email Memo</button><button class="tab" data-p="address">Email Address</button><button class="tab" data-p="notes">备忘录</button></div>
@@ -429,8 +429,13 @@ top:0!important;height:118px!important;background-position:right top!important;b
     <input id="dt" type="text" placeholder="Event 名称，例如：Month End Closing" style="flex:1">
     <input id="dd" type="date">
     <select id="dtype">
-      <option>工作</option><option>会议</option><option>财务</option><option>旅行</option>
-      <option>个人</option><option>生日/纪念日</option><option>其他</option>
+      <option value="工作">💼 工作</option>
+      <option value="会议">👥 会议</option>
+      <option value="旅行">✈️ 旅行</option>
+      <option value="个人">👤 个人</option>
+      <option value="生日/纪念日">🎂 生日/纪念日</option>
+      <option value="假期">🏖️ 假期</option>
+      <option value="其他">📌 其他</option>
     </select>
     <button class="btn primary" onclick="addDate()">保存</button>
     <button class="btn" onclick="cancelCalendarEvent()">取消</button>
@@ -448,9 +453,9 @@ top:0!important;height:118px!important;background-position:right top!important;b
   </div>
   <div id="calendarGrid" class="calendar-grid"></div>
   <div class="calendar-legend">
-    <span><i class="c-work"></i>工作</span><span><i class="c-meeting"></i>会议</span>
-    <span><i class="c-finance"></i>财务</span><span><i class="c-travel"></i>旅行</span>
-    <span><i class="c-personal"></i>个人</span><span><i class="c-birthday"></i>生日/纪念日</span>
+    <span><i class="c-work"></i>💼 工作</span><span><i class="c-meeting"></i>👥 会议</span>
+    <span><i class="c-travel"></i>✈️ 旅行</span><span><i class="c-personal"></i>👤 个人</span>
+    <span><i class="c-birthday"></i>🎂 生日/纪念日</span><span><i class="c-holiday"></i>🏖️ 假期</span>
   </div>
 </div>
 <div id="dateList" style="display:none"></div>
@@ -583,8 +588,11 @@ function editCalendarEvent(id,e){
 function delD(id){if(confirm('确定删除这个 Event 吗？')){d.dates=d.dates.filter(x=>x.id!==id);save()}}
 function changeCalendarMonth(n){calendarView=new Date(calendarView.getFullYear(),calendarView.getMonth()+n,1);renderCalendar()}
 function calendarToday(){calendarView=new Date();renderCalendar()}
+function eventIcon(type){
+ return {'工作':'💼','Closing':'💼','Follow-up':'💼','会议':'👥','Meeting':'👥','财务':'💰','旅行':'✈️','个人':'👤','生日/纪念日':'🎂','假期':'🏖️','其他':'📌'}[type]||'📌'
+}
 function eventClass(type){
- return {'工作':'ev-work','Closing':'ev-work','Follow-up':'ev-work','会议':'ev-meeting','Meeting':'ev-meeting','财务':'ev-finance','旅行':'ev-travel','个人':'ev-personal','生日/纪念日':'ev-birthday','其他':'ev-other'}[type]||'ev-other'
+ return {'工作':'ev-work','Closing':'ev-work','Follow-up':'ev-work','会议':'ev-meeting','Meeting':'ev-meeting','财务':'ev-finance','旅行':'ev-travel','个人':'ev-personal','生日/纪念日':'ev-birthday','假期':'ev-holiday','其他':'ev-other'}[type]||'ev-other'
 }
 function renderCalendar(){
  const grid=document.getElementById('calendarGrid'),title=document.getElementById('calendarMonthTitle');if(!grid||!title)return;
@@ -596,7 +604,7 @@ function renderCalendar(){
    let ev=d.dates.filter(x=>x.date===ds).sort((a,b)=>String(a.title).localeCompare(String(b.title)));
    html+='<div class="calendar-day '+(!inMonth?'other ':'')+(ds===today?'today ':'')+(dow===6?'sat ':'')+(dow===0?'sun ':'')+'" data-date="'+ds+'" onclick="openCalendarEvent(this.dataset.date)">'+
      '<div class="calendar-num">'+z.getDate()+'</div>'+
-     ev.map(x=>'<button class="calendar-event '+eventClass(x.type)+'" onclick="editCalendarEvent('+x.id+',event)" title="'+esc(x.title)+'">'+esc(x.title)+'</button>').join('')+
+     ev.map(x=>'<button class="calendar-event '+eventClass(x.type)+'" onclick="editCalendarEvent('+x.id+',event)" title="'+esc(x.title)+'">'+eventIcon(x.type)+' '+esc(x.title)+'</button>').join('')+
      '</div>';
  }
  grid.innerHTML=html;
