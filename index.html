@@ -384,6 +384,11 @@ top:0!important;height:118px!important;background-position:right top!important;b
   overflow:visible!important;
   height:auto!important;
 }
+</style><style id="v56-lunar-sg">
+.calendar-num{display:flex!important;align-items:baseline!important;gap:6px!important;flex-wrap:wrap!important}
+.lunar-text{font-size:10px;font-weight:500;color:#9a8173;white-space:nowrap}
+.lunar-festival{font-size:10px;font-weight:700;color:#b85b4a;white-space:nowrap}
+.sg-holiday{background:#fff0f0!important;border-color:#efb7b7!important;color:#a53b3b!important}
 </style></head><body><div class="app"><h1>Lynn’s Work Book</h1><div class="meta">待办 · 重要日期 · Email Memo · 备忘录 · 资料备份</div>
 <div class="tabs"><button class="tab active" data-p="workmaster">工作列表</button><button class="tab" data-p="dates">重要日期</button><button class="tab" data-p="email">Email Memo</button><button class="tab" data-p="address">Email Address</button><button class="tab" data-p="notes">备忘录</button></div>
 <section id="workmaster" class="panel active">
@@ -646,6 +651,30 @@ function eventTimeText(x,ds){
  return '';
 }
 function eventOccursOn(x,ds){return ds>=x.date&&ds<=(x.endDate||x.date)}
+
+const SG_HOLIDAYS={
+'2026-01-01':"New Year's Day",'2026-02-17':'Chinese New Year','2026-02-18':'Chinese New Year','2026-03-21':'Hari Raya Puasa','2026-04-03':'Good Friday','2026-05-01':'Labour Day','2026-05-27':'Hari Raya Haji','2026-05-31':'Vesak Day','2026-06-01':'Vesak Day (Observed)','2026-08-09':'National Day','2026-08-10':'National Day (Observed)','2026-11-08':'Deepavali','2026-11-09':'Deepavali (Observed)','2026-12-25':'Christmas Day',
+'2027-01-01':"New Year's Day",'2027-02-06':'Chinese New Year','2027-02-07':'Chinese New Year','2027-02-08':'Chinese New Year (Observed)','2027-03-10':'Hari Raya Puasa','2027-03-26':'Good Friday','2027-05-01':'Labour Day','2027-05-17':'Hari Raya Haji','2027-05-20':'Vesak Day','2027-08-09':'National Day','2027-10-28':'Deepavali','2027-12-25':'Christmas Day'};
+const LUNAR_FESTIVAL_ICON={'春节':'🧧','元宵节':'🏮','端午节':'🐉','七夕':'💞','中元节':'🏮','中秋节':'🥮','重阳节':'🌼','腊八节':'🥣','除夕':'🧨'};
+function lunarInfo(date){
+ try{
+  const fmt=new Intl.DateTimeFormat('zh-CN-u-ca-chinese',{month:'long',day:'numeric'});
+  let p=fmt.formatToParts(date),mo=(p.find(x=>x.type==='month')||{}).value||'',day=(p.find(x=>x.type==='day')||{}).value||'';
+  const nums={'1':'初一','2':'初二','3':'初三','4':'初四','5':'初五','6':'初六','7':'初七','8':'初八','9':'初九','10':'初十','11':'十一','12':'十二','13':'十三','14':'十四','15':'十五','16':'十六','17':'十七','18':'十八','19':'十九','20':'二十','21':'廿一','22':'廿二','23':'廿三','24':'廿四','25':'廿五','26':'廿六','27':'廿七','28':'廿八','29':'廿九','30':'三十'};
+  let text=day==='1'?mo:(nums[day]||day),festival='';
+  if(mo.includes('正月')&&day==='1')festival='春节';
+  else if(mo.includes('正月')&&day==='15')festival='元宵节';
+  else if(mo.includes('五月')&&day==='5')festival='端午节';
+  else if(mo.includes('七月')&&day==='7')festival='七夕';
+  else if(mo.includes('七月')&&day==='15')festival='中元节';
+  else if(mo.includes('八月')&&day==='15')festival='中秋节';
+  else if(mo.includes('九月')&&day==='9')festival='重阳节';
+  else if((mo.includes('腊月')||mo.includes('十二月'))&&day==='8')festival='腊八节';
+  let nx=new Date(date);nx.setDate(nx.getDate()+1);let np=fmt.formatToParts(nx),nm=(np.find(x=>x.type==='month')||{}).value||'',nd=(np.find(x=>x.type==='day')||{}).value||'';
+  if(nm.includes('正月')&&nd==='1')festival='除夕';
+  return {text,festival};
+ }catch(e){return {text:'',festival:''}}
+}
 function renderCalendar(){
  const grid=document.getElementById('calendarGrid'),title=document.getElementById('calendarMonthTitle');if(!grid||!title)return;
  const y=calendarView.getFullYear(),m=calendarView.getMonth();title.textContent=y+'年 '+(m+1)+'月';
@@ -654,8 +683,10 @@ function renderCalendar(){
  for(let i=0;i<42;i++){
    let z=new Date(start);z.setDate(start.getDate()+i);let ds=ld(z),inMonth=z.getMonth()===m,dow=z.getDay();
    let ev=d.dates.filter(x=>eventOccursOn(x,ds)).sort((a,b)=>(a.startTime||'').localeCompare(b.startTime||''));
+   let li=lunarInfo(z),lunarHtml=li.festival?'<span class="lunar-festival">'+(LUNAR_FESTIVAL_ICON[li.festival]||'🏮')+' '+li.festival+'</span>':'<span class="lunar-text">'+li.text+'</span>',sg=SG_HOLIDAYS[ds]||'';
    html+='<div class="calendar-day '+(!inMonth?'other ':'')+(ds===today?'today ':'')+(dow===6?'sat ':'')+(dow===0?'sun ':'')+'" data-date="'+ds+'" onclick="openCalendarEvent(this.dataset.date)">'+
-     '<div class="calendar-num">'+z.getDate()+'</div>'+
+     '<div class="calendar-num"><span>'+z.getDate()+'</span>'+lunarHtml+'</div>'+
+     (sg?'<div class="calendar-event sg-holiday">🇸🇬 '+esc(sg)+'</div>':'')+
      ev.map(x=>{let tm=eventTimeText(x,ds);return '<button class="calendar-event '+eventClass(x.type)+'" onclick="editCalendarEvent('+x.id+',event)" title="'+esc(x.title)+'">'+
        (tm?'<span class="calendar-event-time">'+tm+'</span>':'')+eventIcon(x.type)+' '+esc(x.title)+'</button>'}).join('')+
      '</div>';
