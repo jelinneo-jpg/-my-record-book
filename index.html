@@ -847,19 +847,52 @@ const LUNAR_FESTIVAL_ICON={'春节':'🧧','元宵节':'🏮','端午节':'🐉'
 function lunarInfo(date){
  try{
   const fmt=new Intl.DateTimeFormat('zh-CN-u-ca-chinese',{month:'long',day:'numeric'});
-  let p=fmt.formatToParts(date),mo=(p.find(x=>x.type==='month')||{}).value||'',day=(p.find(x=>x.type==='day')||{}).value||'';
-  const nums={'1':'初一','2':'初二','3':'初三','4':'初四','5':'初五','6':'初六','7':'初七','8':'初八','9':'初九','10':'初十','11':'十一','12':'十二','13':'十三','14':'十四','15':'十五','16':'十六','17':'十七','18':'十八','19':'十九','20':'二十','21':'廿一','22':'廿二','23':'廿三','24':'廿四','25':'廿五','26':'廿六','27':'廿七','28':'廿八','29':'廿九','30':'三十'};
-  let text=day==='1'?mo:(nums[day]||day),festival='';
-  if(mo.includes('正月')&&day==='1')festival='春节';
-  else if(mo.includes('正月')&&day==='15')festival='元宵节';
-  else if(mo.includes('五月')&&day==='5')festival='端午节';
-  else if(mo.includes('七月')&&day==='7')festival='七夕';
-  else if(mo.includes('七月')&&day==='15')festival='中元节';
-  else if(mo.includes('八月')&&day==='15')festival='中秋节';
-  else if(mo.includes('九月')&&day==='9')festival='重阳节';
-  else if((mo.includes('腊月')||mo.includes('十二月'))&&day==='8')festival='腊八节';
-  let nx=new Date(date);nx.setDate(nx.getDate()+1);let np=fmt.formatToParts(nx),nm=(np.find(x=>x.type==='month')||{}).value||'',nd=(np.find(x=>x.type==='day')||{}).value||'';
-  if(nm.includes('正月')&&nd==='1')festival='除夕';
+  const parts=fmt.formatToParts(date);
+  const rawMonth=((parts.find(x=>x.type==='month')||{}).value||'').trim();
+  const rawDay=((parts.find(x=>x.type==='day')||{}).value||'').trim();
+
+  const zhNum={'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9,'十':10,
+               '十一':11,'十二':12,'十三':13,'十四':14,'十五':15,'十六':16,'十七':17,'十八':18,'十九':19,
+               '二十':20,'廿一':21,'廿二':22,'廿三':23,'廿四':24,'廿五':25,'廿六':26,'廿七':27,'廿八':28,'廿九':29,'三十':30,
+               '初一':1,'初二':2,'初三':3,'初四':4,'初五':5,'初六':6,'初七':7,'初八':8,'初九':9,'初十':10};
+
+  function dayNumber(v){
+    const n=parseInt(v,10);
+    if(!Number.isNaN(n))return n;
+    return zhNum[v.replace(/日|號|号/g,'')]||0;
+  }
+  function monthNumber(v){
+    const clean=v.replace(/閏|闰|月/g,'').trim();
+    const n=parseInt(clean,10);
+    if(!Number.isNaN(n))return n;
+    if(clean==='正')return 1;
+    if(clean==='冬'||clean==='十一')return 11;
+    if(clean==='臘'||clean==='腊'||clean==='十二')return 12;
+    return {'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9,'十':10}[clean]||0;
+  }
+
+  const moNum=monthNumber(rawMonth), dayNum=dayNumber(rawDay);
+  const nums={1:'初一',2:'初二',3:'初三',4:'初四',5:'初五',6:'初六',7:'初七',8:'初八',9:'初九',10:'初十',
+    11:'十一',12:'十二',13:'十三',14:'十四',15:'十五',16:'十六',17:'十七',18:'十八',19:'十九',20:'二十',
+    21:'廿一',22:'廿二',23:'廿三',24:'廿四',25:'廿五',26:'廿六',27:'廿七',28:'廿八',29:'廿九',30:'三十'};
+  const monthText={1:'正月',2:'二月',3:'三月',4:'四月',5:'五月',6:'六月',7:'七月',8:'八月',9:'九月',10:'十月',11:'十一月',12:'腊月'};
+
+  let text=dayNum===1?(monthText[moNum]||rawMonth):(nums[dayNum]||rawDay),festival='';
+  if(moNum===1&&dayNum===1)festival='春节';
+  else if(moNum===1&&dayNum===15)festival='元宵节';
+  else if(moNum===5&&dayNum===5)festival='端午节';
+  else if(moNum===7&&dayNum===7)festival='七夕';
+  else if(moNum===7&&dayNum===15)festival='中元节';
+  else if(moNum===8&&dayNum===15)festival='中秋节';
+  else if(moNum===9&&dayNum===9)festival='重阳节';
+  else if(moNum===12&&dayNum===8)festival='腊八节';
+
+  let nx=new Date(date);nx.setDate(nx.getDate()+1);
+  const np=fmt.formatToParts(nx);
+  const nm=monthNumber(((np.find(x=>x.type==='month')||{}).value||'').trim());
+  const nd=dayNumber(((np.find(x=>x.type==='day')||{}).value||'').trim());
+  if(nm===1&&nd===1)festival='除夕';
+
   return {text,festival};
  }catch(e){return {text:'',festival:''}}
 }
