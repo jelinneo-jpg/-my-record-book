@@ -338,7 +338,29 @@ top:0!important;height:118px!important;background-position:right top!important;b
 .top-settings-btn{top:38px!important;right:4px!important}
 }
 </style>
-</head><body><div class="app"><h1>Lynn’s Work Book</h1><div class="meta">待办 · 重要日期 · Email Memo · 备忘录 · 资料备份</div>
+<style id="v50-shinchan-calendar">
+#dates .page-actionbar{position:relative;z-index:3}
+.calendar-card{background:#fffdf9;border:1px solid #eadfce;border-radius:18px;overflow:hidden;box-shadow:0 3px 10px rgba(93,69,43,.045)}
+.calendar-toolbar{display:flex;align-items:center;justify-content:center;gap:18px;padding:14px 18px}
+.calendar-title{font-size:24px;font-weight:800;color:#4b3025;min-width:180px;text-align:center}
+.calendar-nav,.calendar-today{border:1px solid #eadfce;background:#fff9ed;color:#6b4936;border-radius:999px;cursor:pointer}
+.calendar-nav{width:42px;height:42px;font-size:29px;line-height:34px}
+.calendar-today{padding:9px 18px;margin-left:auto;font-size:14px}
+.calendar-week,.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr)}
+.calendar-week>div{padding:10px 4px;text-align:center;background:#fff0ee;border-right:1px solid #fff;font-weight:700;color:#70453b}
+.calendar-week .sat{background:#eaf5ff;color:#2583d8}.calendar-week .sun{color:#ef4c4c}
+.calendar-grid{border-top:1px solid #eadfce}
+.calendar-day{position:relative;min-height:112px;padding:8px;border-right:1px solid #eee1cf;border-bottom:1px solid #eee1cf;background:#fffdf9;cursor:pointer;overflow:hidden}
+.calendar-day:nth-child(7n){border-right:0}
+.calendar-day.other{background:#fffaf1;color:#aaa}.calendar-day.today{background:#fff1f0;box-shadow:inset 0 0 0 2px #f36b6b}
+.calendar-num{font-size:17px;font-weight:700;margin-bottom:5px}.calendar-day.sat .calendar-num{color:#2583d8}.calendar-day.sun .calendar-num{color:#ef4c4c}
+.calendar-event{display:block;width:100%;border:0;border-radius:8px;padding:5px 7px;margin:4px 0;text-align:left;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;color:#49362d}
+.ev-work{background:#ffd9dd}.ev-meeting{background:#d9ebff}.ev-finance{background:#ffe8a9}.ev-travel{background:#d4f2e5}.ev-personal{background:#ead9ff}.ev-birthday{background:#ffe0c2}.ev-other{background:#ececec}
+.calendar-legend{display:flex;gap:18px;flex-wrap:wrap;padding:12px 18px;color:#77685f;font-size:13px}
+.calendar-legend span{display:flex;align-items:center;gap:6px}.calendar-legend i{width:13px;height:13px;border-radius:50%;display:inline-block}
+.c-work{background:#f5a9b2}.c-meeting{background:#8fc4ff}.c-finance{background:#ffd66f}.c-travel{background:#83d7b5}.c-personal{background:#c79be8}.c-birthday{background:#ffc58f}
+@media(max-width:800px){.calendar-card{overflow-x:auto}.calendar-toolbar,.calendar-week,.calendar-grid{min-width:720px}.calendar-day{min-height:100px}.calendar-title{font-size:20px}}
+</style></head><body><div class="app"><h1>Lynn’s Work Book</h1><div class="meta">待办 · 重要日期 · Email Memo · 备忘录 · 资料备份</div>
 <div class="tabs"><button class="tab active" data-p="workmaster">工作列表</button><button class="tab" data-p="dates">重要日期</button><button class="tab" data-p="email">Email Memo</button><button class="tab" data-p="address">Email Address</button><button class="tab" data-p="notes">备忘录</button></div>
 <section id="workmaster" class="panel active">
 <button class="top-settings-btn" type="button" onclick="openWorkSettings()" title="设定" aria-label="设定">⚙️</button>
@@ -399,7 +421,40 @@ top:0!important;height:118px!important;background-position:right top!important;b
 </div>
 </section>
 <section id="dates" class="panel">
-<button class="top-settings-btn" type="button" onclick="openWorkSettings()" title="设定" aria-label="设定">⚙️</button><div class="page-actionbar"><button class="btn primary" onclick="togglePageAdd('dateAddCard')">＋ 新增重要日期</button></div><div class="card add-form-hidden" id="dateAddCard"><h3>新增重要日期</h3><div class="row"><input id="dt" type="text" placeholder="例如：Month End Closing" style="flex:1"><input id="dd" type="date"><select id="dtype"><option>Closing</option><option>Follow-up</option><option>Meeting</option><option>其他</option></select><button class="btn primary" onclick="addDate()">新增</button></div></div><div class="card" id="dateList"></div></section>
+<button class="top-settings-btn" type="button" onclick="openWorkSettings()" title="设定" aria-label="设定">⚙️</button>
+<div class="page-actionbar"><button class="btn primary" onclick="openCalendarEvent()">＋ 新增 Event</button></div>
+<div class="card add-form-hidden" id="dateAddCard">
+  <h3 id="dateFormTitle">新增 Event</h3>
+  <div class="row">
+    <input id="dt" type="text" placeholder="Event 名称，例如：Month End Closing" style="flex:1">
+    <input id="dd" type="date">
+    <select id="dtype">
+      <option>工作</option><option>会议</option><option>财务</option><option>旅行</option>
+      <option>个人</option><option>生日/纪念日</option><option>其他</option>
+    </select>
+    <button class="btn primary" onclick="addDate()">保存</button>
+    <button class="btn" onclick="cancelCalendarEvent()">取消</button>
+  </div>
+</div>
+<div class="calendar-card">
+  <div class="calendar-toolbar">
+    <button class="calendar-nav" onclick="changeCalendarMonth(-1)">‹</button>
+    <div id="calendarMonthTitle" class="calendar-title"></div>
+    <button class="calendar-nav" onclick="changeCalendarMonth(1)">›</button>
+    <button class="calendar-today" onclick="calendarToday()">今天</button>
+  </div>
+  <div class="calendar-week">
+    <div>星期一</div><div>星期二</div><div>星期三</div><div>星期四</div><div>星期五</div><div class="sat">星期六</div><div class="sun">星期日</div>
+  </div>
+  <div id="calendarGrid" class="calendar-grid"></div>
+  <div class="calendar-legend">
+    <span><i class="c-work"></i>工作</span><span><i class="c-meeting"></i>会议</span>
+    <span><i class="c-finance"></i>财务</span><span><i class="c-travel"></i>旅行</span>
+    <span><i class="c-personal"></i>个人</span><span><i class="c-birthday"></i>生日/纪念日</span>
+  </div>
+</div>
+<div id="dateList" style="display:none"></div>
+</section>
 <section id="email" class="panel">
 <button class="top-settings-btn" type="button" onclick="openWorkSettings()" title="设定" aria-label="设定">⚙️</button><div class="page-actionbar"><button class="btn primary" onclick="togglePageAdd('emailAddCard')">＋ 新增 Email Memo</button></div><div class="card add-form-hidden" id="emailAddCard"><h3>📧 新增 Email Memo</h3><input id="es" type="text" placeholder="🔍 搜索标题或内容" oninput="render()"><br><br><input id="et" type="text" placeholder="标题，例如：Payment Reminder"><textarea id="eb" placeholder="Email 内容…"></textarea><button class="btn primary" onclick="saveEmail()">保存 Email Memo</button></div><div id="emailList"></div></section>
 <section id="address" class="panel">
@@ -507,7 +562,45 @@ function tomorrow(id){
  x.completed=(x.completed||[]).filter(a=>a!==t);save()
 }
 function delW(id){if(confirm('确定删除这项工作吗？')){d.works=d.works.filter(x=>x.id!==id);save()}}
-function addDate(){if(!dt.value.trim()||!dd.value)return alert('请填写名称和日期');d.dates.push({id:Date.now(),title:dt.value.trim(),date:dd.value,type:dtype.value});dt.value='';dd.value='';save()}function delD(id){if(confirm('确定删除吗？')){d.dates=d.dates.filter(x=>x.id!==id);save()}}
+let calendarView=new Date(),calendarEditId=null;
+function openCalendarEvent(date){
+ calendarEditId=null;dateFormTitle.textContent='新增 Event';dt.value='';dd.value=date||'';dtype.value='工作';
+ document.getElementById('dateAddCard').style.display='block';dt.focus();
+}
+function cancelCalendarEvent(){calendarEditId=null;document.getElementById('dateAddCard').style.display='none'}
+function addDate(){
+ if(!dt.value.trim()||!dd.value)return alert('请填写 Event 名称和日期');
+ if(calendarEditId){
+   let x=d.dates.find(a=>a.id===calendarEditId);if(x)Object.assign(x,{title:dt.value.trim(),date:dd.value,type:dtype.value});
+ }else d.dates.push({id:Date.now(),title:dt.value.trim(),date:dd.value,type:dtype.value});
+ calendarEditId=null;dt.value='';dd.value='';document.getElementById('dateAddCard').style.display='none';save();
+}
+function editCalendarEvent(id,e){
+ if(e)e.stopPropagation();let x=d.dates.find(a=>a.id===id);if(!x)return;
+ calendarEditId=id;dateFormTitle.textContent='编辑 Event';dt.value=x.title;dd.value=x.date;dtype.value=x.type||'其他';
+ document.getElementById('dateAddCard').style.display='block';dt.focus();
+}
+function delD(id){if(confirm('确定删除这个 Event 吗？')){d.dates=d.dates.filter(x=>x.id!==id);save()}}
+function changeCalendarMonth(n){calendarView=new Date(calendarView.getFullYear(),calendarView.getMonth()+n,1);renderCalendar()}
+function calendarToday(){calendarView=new Date();renderCalendar()}
+function eventClass(type){
+ return {'工作':'ev-work','Closing':'ev-work','Follow-up':'ev-work','会议':'ev-meeting','Meeting':'ev-meeting','财务':'ev-finance','旅行':'ev-travel','个人':'ev-personal','生日/纪念日':'ev-birthday','其他':'ev-other'}[type]||'ev-other'
+}
+function renderCalendar(){
+ const grid=document.getElementById('calendarGrid'),title=document.getElementById('calendarMonthTitle');if(!grid||!title)return;
+ const y=calendarView.getFullYear(),m=calendarView.getMonth();title.textContent=y+'年 '+(m+1)+'月';
+ const first=new Date(y,m,1),offset=(first.getDay()+6)%7,start=new Date(y,m,1-offset),today=ld();
+ let html='';
+ for(let i=0;i<42;i++){
+   let z=new Date(start);z.setDate(start.getDate()+i);let ds=ld(z),inMonth=z.getMonth()===m,dow=z.getDay();
+   let ev=d.dates.filter(x=>x.date===ds).sort((a,b)=>String(a.title).localeCompare(String(b.title)));
+   html+='<div class="calendar-day '+(!inMonth?'other ':'')+(ds===today?'today ':'')+(dow===6?'sat ':'')+(dow===0?'sun ':'')+'" onclick="openCalendarEvent(\\''+ds+'\\')">'+
+     '<div class="calendar-num">'+z.getDate()+'</div>'+
+     ev.map(x=>'<button class="calendar-event '+eventClass(x.type)+'" onclick="editCalendarEvent('+x.id+',event)" title="'+esc(x.title)+'">'+esc(x.title)+'</button>').join('')+
+     '</div>';
+ }
+ grid.innerHTML=html;
+}
 let ee=null;function saveEmail(){if(!et.value.trim()&&!eb.value.trim())return;if(ee){let x=d.emails.find(a=>a.id===ee);x.title=et.value.trim()||'未命名 Email';x.body=eb.value.trim()}else d.emails.unshift({id:Date.now(),title:et.value.trim()||'未命名 Email',body:eb.value.trim()});ee=null;et.value='';eb.value='';save()}function editE(id){let x=d.emails.find(a=>a.id===id);ee=id;et.value=x.title;eb.value=x.body;document.getElementById('emailAddCard').style.display='block'}function delE(id){if(confirm('确定删除这个 Email Memo 吗？')){d.emails=d.emails.filter(x=>x.id!==id);save()}}async function copyE(id){let x=d.emails.find(a=>a.id===id);await navigator.clipboard.writeText(x.body);alert('已复制')}
 let ae=null;
 function saveAddress(){let company=ac.value.trim(),billing=ab.value.trim(),soa=aso.value.trim(),note=an.value.trim();if(!company&&!billing&&!soa)return alert('请填写公司名字或 Email');if(ae){let x=d.addresses.find(a=>a.id===ae);if(x)Object.assign(x,{company,billing,soa,note})}else d.addresses.unshift({id:Date.now(),company,billing,soa,note});ae=null;ac.value='';ab.value='';aso.value='';an.value='';save()}
@@ -568,8 +661,7 @@ function render(){
    ${p.map(pendingCard).join('')||'<div class="empty">今天没有未完成工作 🎉</div>'}
    <div class="work-section-title"><b>已完成 ✅</b><span class="badge">${q.length}</span></div>
    ${q.map(doneCard).join('')||'<div class="empty">还没有完成项目</div>'}`;
-
-  dateList.innerHTML=d.dates.sort((a,b)=>a.date.localeCompare(b.date)).map(x=>`<div class="item"><b>${esc(x.title)}</b> <span class="badge">${esc(x.type)}</span><div class="meta">${x.date}</div><button class="danger" onclick="delD(${x.id})">删除</button></div>`).join('')||'<div class="empty">还没有重要日期</div>';
+  renderCalendar();
  let z=(es?.value||'').toLowerCase(),em=d.emails.filter(x=>!z||(x.title+' '+x.body).toLowerCase().includes(z));emailList.innerHTML=em.map(x=>`<div class="card"><b>${esc(x.title)}</b><div class="note">${esc(x.body)}</div><div class="actions"><button class="btn" onclick="copyE(${x.id})">📋 Copy</button><button class="btn" onclick="editE(${x.id})">✏️ Edit</button><button class="danger" onclick="delE(${x.id})">🗑️ Delete</button></div></div>`).join('')||'<div class="card empty">还没有 Email Memo</div>';let aq=(as?.value||'').trim().toLowerCase();let adr=d.addresses.filter(x=>!aq||[x.company,x.billing,x.soa,x.note].join(' ').toLowerCase().includes(aq));addressList.innerHTML=adr.length?adr.map(x=>`<div class="card"><div class="title">${esc(x.company||'未填写公司')}</div>${x.billing?`<div class="item"><b>Billing Email</b><div class="note">${esc(x.billing)}</div><button class="btn" onclick="copyA(${x.id},'billing')">📋 Copy</button></div>`:''}${x.soa?`<div class="item"><b>SOA Email</b><div class="note">${esc(x.soa)}</div><button class="btn" onclick="copyA(${x.id},'soa')">📋 Copy</button></div>`:''}${x.note?`<div class="note"><b>备注：</b>${esc(x.note)}</div>`:''}<div class="actions"><button class="btn" onclick="editA(${x.id})">✏️ Edit</button><button class="danger" onclick="delA(${x.id})">🗑️ Delete</button></div></div>`).join(''):'<div class="card empty">还没有 Email Address</div>';noteList.innerHTML=d.notes.map(x=>`<div class="card"><b>${esc(x.title)}</b><div class="note">${esc(x.body)}</div><button class="danger" onclick="delN(${x.id})">删除</button></div>`).join('')||'<div class="card empty">还没有备忘录</div>'}
 function initNavDrag(){
  const tabs=document.querySelector('.tabs');if(!tabs)return;
