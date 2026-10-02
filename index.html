@@ -457,8 +457,124 @@ top:0!important;height:118px!important;background-position:right top!important;b
  background-color:transparent!important;background-size:56% auto!important;
  background-repeat:no-repeat!important;background-position:center!important;
 }
+</style><style id="v69-nav-icon-text-gap">
+.tabs .tab{
+  padding-left:58px!important;
+}
+.tabs .tab::before{
+  left:8px!important;
+  width:46px!important;
+}
+</style><style id="v71-shorter-nav-width">
+.tabs .tab{
+  width:178px!important;
+  max-width:178px!important;
+}
+</style><style id="v72-nav-gap-email-one-line">
+.tabs .tab{
+  padding-left:50px!important;
+  white-space:nowrap!important;
+}
+.tabs .tab::before{
+  left:5px!important;
+  width:42px!important;
+}
+.tabs .tab[data-p="address"]{
+  width:190px!important;
+  max-width:190px!important;
+  white-space:nowrap!important;
+}
+</style><style id="v74-match-email-address-spacing">
+.tabs .tab[data-p="workmaster"],
+.tabs .tab[data-p="dates"],
+.tabs .tab[data-p="notes"]{
+  padding-left:50px!important;
+  white-space:nowrap!important;
+}
+.tabs .tab[data-p="workmaster"]::before,
+.tabs .tab[data-p="dates"]::before,
+.tabs .tab[data-p="notes"]::before{
+  left:5px!important;
+  width:42px!important;
+}
+</style><style id="v75-nav-visual-uniform">
+.tabs .tab{
+  position:relative!important;
+  padding-left:64px!important;
+  padding-right:10px!important;
+  text-align:left!important;
+  white-space:nowrap!important;
+}
+.tabs .tab::before{
+  position:absolute!important;
+  left:10px!important;
+  width:42px!important;
+  height:42px!important;
+  background-position:center!important;
+  background-repeat:no-repeat!important;
+}
+.tabs .tab[data-p="address"]{
+  width:190px!important;
+  max-width:190px!important;
+}
+</style><style id="v76-nav-icons-slightly-larger">
+.tabs .tab::before{
+  width:48px!important;
+  height:48px!important;
+}
+.tabs .tab{
+  padding-left:70px!important;
+}
+</style><style id="v77-nav-icon-optical-sizing">
+/* shared visual box */
+.tabs .tab::before{
+  width:48px!important;
+  height:48px!important;
+  left:10px!important;
+  background-position:center!important;
+  background-repeat:no-repeat!important;
+}
+/* optical sizing per source artwork (different transparent margins) */
+.tabs .tab[data-p="workmaster"]::before{background-size:72% auto!important;}
+.tabs .tab[data-p="dates"]::before{background-size:74% auto!important;}
+.tabs .tab[data-p="email"]::before{background-size:62% auto!important;}
+.tabs .tab[data-p="address"]::before{background-size:66% auto!important;}
+.tabs .tab[data-p="notes"]::before{background-size:72% auto!important;}
+</style><style id="v78-nav-icon-optical-position">
+.tabs .tab{
+  padding-left:70px!important;
+  text-align:left!important;
+}
+.tabs .tab::before{
+  left:10px!important;
+  top:50%!important;
+  transform:translateY(-50%)!important;
+  width:48px!important;
+  height:48px!important;
+}
+/* optical center correction per artwork */
+.tabs .tab[data-p="workmaster"]::before{
+  background-size:68% auto!important;
+  background-position:50% 51%!important;
+}
+.tabs .tab[data-p="dates"]::before{
+  background-size:72% auto!important;
+  background-position:50% 50%!important;
+}
+.tabs .tab[data-p="email"]::before{
+  background-size:62% auto!important;
+  background-position:50% 50%!important;
+}
+.tabs .tab[data-p="address"]::before{
+  background-size:70% auto!important;
+  background-position:50% 50%!important;
+}
+.tabs .tab[data-p="notes"]::before{
+  background-size:68% auto!important;
+  background-position:50% 49%!important;
+}
 </style></head><body><div class="app"><h1>Lynn’s Work Book</h1><div class="meta">待办 · 重要日期 · Email Memo · 备忘录 · 资料备份</div>
-<div class="tabs"><button class="tab active" data-p="workmaster">工作列表</button><button class="tab" data-p="dates">重要日期</button><button class="tab" data-p="email">Email Memo</button><button class="tab" data-p="address">Email Address</button><button class="tab" data-p="notes">备忘录</button></div>
+<div class="tabs"><button class="tab active" data-p="workmaster">工作列表</button><button class="tab" data-p="dates">日历</button><button class="tab" data-p="email">Email Memo</button><button class="tab" data-p="address">Email Address</button><button class="tab" data-p="notes">备忘录</button></div>
 <section id="workmaster" class="panel active">
 <button class="top-settings-btn" type="button" onclick="openWorkSettings()" title="设定" aria-label="设定">⚙️</button>
 <div class="row" style="margin-bottom:14px">
@@ -884,7 +1000,7 @@ function toggleNavOrderEditor(){
 }
 function renderNavOrderEditor(){
  const list=document.getElementById('navOrderList'),tabs=document.querySelector('.tabs');if(!list||!tabs)return;
- const names={workmaster:'工作列表',dates:'重要日期',email:'Email Memo',address:'Email Address',notes:'备忘录'};
+ const names={workmaster:'工作列表',dates:'日历',email:'Email Memo',address:'Email Address',notes:'备忘录'};
  const arr=[...tabs.querySelectorAll('.tab')].filter(x=>x.dataset.p!=='backup');
  list.innerHTML=arr.map((b,i)=>'<div class="nav-order-row"><span>'+names[b.dataset.p]+'</span>'+
  '<button type="button" onclick="moveNavItem('+i+',-1)" '+(i===0?'disabled':'')+'>↑</button>'+
